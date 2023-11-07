@@ -3,32 +3,60 @@ body {
     display: flex;
     justify-content: center; /* 水平居中 */
     align-items: center; /* 垂直居中 */
-    height: 100vh; /* 使body占满视口高度 */
+    height: 95vh; /* 使body占满视口高度 */
 }
 
 .container {
+    display: flex; /* 启用Flexbox布局 */
+    justify-content: space-between; /* 可以根据需要调整对齐方式 */
     position: relative;
     text-align: center; /* 水平居中文本 */
 }
 .pic {
     position: absolute;
     width: 300px;
-    height: 250px;
+    height: 260px;
     bottom: 0;
     left: 0;
-    margin: -150px
 }
-.createRoom, .joinRoom, .leaveRoom {
-    padding: 200px 100px;
-    font-size: 30px;
+.createRoom{
+    padding: 5em 2em;
+    font-size: 40px;
     background-color: #007bff;
     color: #000000;
     border: none;
     border-radius: 10px;
     cursor: pointer;
     margin-top: 20px;
-    margin: 100px;
+    margin: 80px;
     background-image: url('croom.jpg'); /* 设置背景图片的路径 */
+    background-size: cover; /* 可选：使背景图片覆盖整个按钮 */
+    background-repeat: no-repeat;
+}
+ .joinRoom{
+    padding: 5em 2em;
+    font-size: 40px;
+    color: #000000;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 20px;
+    margin: 80px;
+    background-image: url('jroom.jpg'); /* 设置背景图片的路径 */
+    background-size: cover; /* 可选：使背景图片覆盖整个按钮 */
+    background-repeat: no-repeat;
+}
+ .leaveRoom {
+    padding: 5em 2em;
+    font-size: 40px;
+    background-color: #007bff;
+    color: #000000;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 20px;
+    margin: 80px;
+    background-image: url('lroom.jpg'); /* 设置背景图片的路径 */
     background-size: cover; /* 可选：使背景图片覆盖整个按钮 */
     background-repeat: no-repeat;
 }
