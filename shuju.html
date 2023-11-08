@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>用户管理页面</title>
+	<style>
+		table, th, td {
+			border: 1px solid black;
+			border-collapse: collapse;
+			padding: 10px;
+		}
+	</style>
+</head>
+<body>
+	<h1>用户管理页面</h1>
+	<table>
+		<thead>
+			<tr>
+				<th>用户ID</th>
+				<th>用户名</th>
+				<th>积分</th>
+				<th>排名</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>1</td>
+				<td>张三</td>
+				<td>1000</td>
+				<td>1</td>
+			</tr>
+			<!-- 其他用户数据 -->
+		</tbody>
+	</table>
+
+	<form>
+		<label for="userId">用户ID:</label>
+		<input type="text" id="userId" name="userId"><br><br>
+		<label for="userName">用户名:</label>
+		<input type="text" id="userName" name="userName"><br><br>
+		<label for="points">积分:</label>
+		<input type="text" id="points" name="points"><br><br>
+		<label for="ranking">排名:</label>
+		<input type="text" id="ranking" name="ranking"><br><br>
+		<input type="submit" value="提交">
+	</form>
+</body>
+</html>
