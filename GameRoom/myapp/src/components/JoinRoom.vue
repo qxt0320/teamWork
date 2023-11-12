@@ -8,8 +8,12 @@
         <input class="input-box" type="text" maxlength="1">
         <input class="input-box" type="text" maxlength="1">
       </div>
-  
-      <button class="join-button">进入房间</button>
+      <router-link to="/gameplay">
+        <button class="join-button">进入房间</button></router-link>
+    </div>
+    <div class="music-container">
+        <img src="../images/music-off.png" alt="" class="MusicOFF">
+        <img src="../images/music-on.png" alt="" class="MusicON">
     </div>
     <img src="../images/IMG_6933.png" alt="" class="img2">
   </template>
@@ -36,7 +40,20 @@
     bottom: 0;
     left: 0;
   }
-  
+  .MusicOFF {
+    position: absolute;
+    width: 100px;
+    bottom: 0;
+    right: 0;
+    cursor: pointer;
+  }
+  .MusicON {
+    position: absolute;
+    width: 100px;
+    bottom: 100px;
+    right: 0;
+    cursor: pointer;
+  }
   .title {
     font-size: 75px;
     margin-bottom: 30px;

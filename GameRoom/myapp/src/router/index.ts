@@ -21,6 +21,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'joinroom',
     component: () => import('../components/JoinRoom.vue')
   },
+  {
+    path: '/roomchoose',
+    name: 'roomchoose',
+    component: () => import('../components/RoomChoose.vue')
+  },
 ]
 
 const router = createRouter({
