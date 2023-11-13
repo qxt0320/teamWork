@@ -21,6 +21,21 @@ const routes: Array<RouteRecordRaw> = [
     name: 'gamestart',
     component: () => import('../components/GameStart.vue')
   },
+   {
+  path: '/shouye',
+  name: 'shouye',
+  component: () => import('../components/ShouYe.vue')
+},
+{
+  path: '/zhuce',
+  name: 'zhuce',
+  component: () => import('../components/ZhuCe.vue')
+},
+{
+  path: '/succeedpage',
+  name: 'succeedpage',
+  component: () => import('../components/SucceedPage.vue')
+},
 ]
 
 const router = createRouter({
