@@ -1,26 +1,27 @@
 
-
 <template>
-  <div class="menu-container">
+  <div>
+    <div class="container">
 
-    <router-link to="/gameroom">
-      <button class="custom-button" @click="navigateToGuidePage(2)">
-        <img src="../images/Frame 3.png" alt="" class="frame3">
-      </button></router-link>
-    <router-link to="/page1">
-      <button class="custom-button" @click="navigateToGuidePage(3)">
-        <img src="../images/Frame 4.png" alt="" class="frame4">
-      </button></router-link>
+      <router-link to="/createroom">
+        <button class="custom-button" @click="navigateToGuidePage(1)">
+          <img src="../images/croom.jpg" alt="" class="CreateRoom">
+        </button></router-link>
 
-    <router-link to="/guide">
-      <button class="custom-button" @click="navigateToGuidePage(1)">
-        <img src="../images/Frame 2.png" alt="" class="frame2">
-      </button></router-link>
-    <img src="../images/IMG_6934.png" alt="" class="img2">
+      <router-link to="/joinroom">
+        <button class="custom-button" @click="navigateToGuidePage(3)">
+          <img src="../images/jroom.jpg" alt="" class="JoinRoom">
+        </button></router-link>
+      <router-link to="/menu">
+        <button class="custom-button" @click="navigateToGuidePage(2)">
+          <img src="../images/lroom.jpg" alt="" class="LeaveRoom">
+        </button></router-link>
+    </div>
     <div class="music-container">
       <img src="../images/music-off.png" alt="" class="MusicOFF">
       <img src="../images/music-on.png" alt="" class="MusicON">
     </div>
+    <img src="../images/IMG_6934.png" alt="" class="img1">
   </div>
 </template>
 
@@ -38,7 +39,7 @@ export default {
     navigateToGuidePage(buttonNumber) {
       // 在这里你可以执行一些逻辑，然后导航到guide页面
       // 可以根据按钮的不同执行不同的逻辑
-      this.$router.push('/guide');
+      this.$router.push('/gameroom');
     },
   },
 
@@ -47,8 +48,18 @@ export default {
 </script>
 
 <style scoped>
-/* 在这里添加组件的样式 */
-.img2 {
+.container {
+  display: flex;
+  /* 启用Flexbox布局 */
+  justify-content: space-between;
+  /* 可以根据需要调整对齐方式 */
+  position: relative;
+  text-align: center;
+  /* 水平居中文本 */
+}
+
+/* 其他样式保持不变 */
+.img1 {
   position: absolute;
   width: 300px;
   height: 260px;
@@ -72,7 +83,7 @@ export default {
   cursor: pointer;
 }
 
-.frame4 {
+.CreateRoom {
   width: 300px;
   border: none;
   border-radius: 10px;
@@ -81,7 +92,7 @@ export default {
   margin: 80px;
 }
 
-.frame3 {
+.LeaveRoom {
   width: 300px;
   border: none;
   border-radius: 10px;
@@ -90,7 +101,7 @@ export default {
   margin: 80px;
 }
 
-.frame2 {
+.JoinRoom {
   width: 300px;
   border: none;
   border-radius: 10px;
@@ -105,5 +116,4 @@ export default {
   cursor: pointer;
   padding: 0;
   /* 可以去掉按钮的默认 padding */
-}
-</style>
+}</style>

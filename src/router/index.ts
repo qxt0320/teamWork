@@ -21,6 +21,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'gamestart',
     component: () => import('../components/GameStart.vue')
   },
+  {
+    path: '/gameroom',
+    name: 'gameroom',
+    component: () => import('../components/GameRoom.vue')
+  },
 ]
 
 const router = createRouter({
