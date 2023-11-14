@@ -16,16 +16,19 @@ def get_db_connection():
 
 
 def init_db():
-    # 初始化数据库，创建所需的表
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # 创建用户表
+    # 删除现有的 users 表，如果它已经存在
+    cursor.execute('DROP TABLE IF EXISTS users')
+
+    # 重新创建 users 表，这次包括 real_name 列
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS users (
+    CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
+        real_name TEXT,
         score INTEGER DEFAULT 0,
         rank INTEGER DEFAULT 0
     )
@@ -43,10 +46,14 @@ def init_db():
     conn.close()
 
 
-def add_user(username, password):
+def add_user(username, password, real_name):
+    # 更新函数以接受 real_name 参数
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO users (username, password, score, rank) VALUES (?, ?, 0, 0)', (username, password))
+    cursor.execute('''
+        INSERT INTO users (username, password, real_name, score, rank)
+        VALUES (?, ?, ?, 0, 0)
+    ''', (username, password, real_name))
     conn.commit()
     conn.close()
 
@@ -62,7 +69,7 @@ def get_user(username):
 def create_room(room_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO rooms (id, participants) VALUES (?, '')', (room_id,))
+    cursor.execute('INSERT INTO rooms (id, participants) VALUES (?, ?)', (room_id, ''))
     conn.commit()
     conn.close()
 
@@ -75,9 +82,9 @@ def join_room(room_id, user_id):
     conn.close()
 
 
-def generate_token(user_id):
+def generate_token(username):
     expiration_time = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-    token = jwt.encode({'user_id': user_id, 'exp': expiration_time}, SECRET_KEY, algorithm='HS256')
+    token = jwt.encode({'username': username, 'exp': expiration_time}, SECRET_KEY, algorithm='HS256')
     return token.decode('utf-8') if isinstance(token, bytes) else token
 
 
