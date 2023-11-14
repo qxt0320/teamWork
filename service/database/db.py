@@ -104,7 +104,7 @@ def create_room(room_id, username):
     conn.close()
 
 
-def join_room(room_id, username):
+def join_room(room_id, username, max_participants=2):
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -127,6 +127,11 @@ def join_room(room_id, username):
     if username in participants:
         conn.close()
         return "User already in the room", 400
+
+    # 验证房间人数是否已满
+    if len(participants) >= max_participants:
+        conn.close()
+        return "Room is full", 400
 
     # 更新参与者列表
     participants.append(username)
@@ -163,6 +168,46 @@ def user_exists(username):
     user = cursor.fetchone()
     conn.close()
     return bool(user)
+
+
+def out_room(room_id, username):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # 验证房间是否存在
+    if not room_exists(room_id):
+        conn.close()
+        return "Room not found", 404
+
+    # 获取房间的参与者列表
+    cursor.execute('SELECT participants, creator_username FROM rooms WHERE id = ?', (room_id,))
+    room_data = cursor.fetchone()
+    if room_data is None:
+        conn.close()
+        return "Room data not found", 404
+
+    participants_str = room_data[0]
+    participants = participants_str.split(',')
+    creator_username = room_data[1]
+
+    # 如果退出房间的是创建者，需要转交房主给其他用户（如果有其他用户的话）
+    if username == creator_username:
+        if len(participants) > 1:
+            new_creator = [user for user in participants if user != username][0]
+            cursor.execute('UPDATE rooms SET creator_username = ? WHERE id = ?', (new_creator, room_id))
+        else:
+            # 如果没有其他用户，删除房间
+            cursor.execute('DELETE FROM rooms WHERE id = ?', (room_id,))
+    else:
+        # 如果退出房间的不是创建者，只需从参与者列表中移除用户
+        participants.remove(username)
+        new_participants_str = ','.join(participants)
+        cursor.execute('UPDATE rooms SET participants = ? WHERE id = ?', (new_participants_str, room_id))
+
+    conn.commit()
+    conn.close()
+
+    return "User left the room", 200
 
 
 # 调用 init_db 函数以初始化数据库

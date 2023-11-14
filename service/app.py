@@ -2,7 +2,7 @@
 import jwt
 from flask import Flask, request, jsonify, abort
 from database.db import get_user, add_user, create_room, join_room, generate_token, verify_token, room_exists, \
-    user_exists
+    user_exists, out_room
 from functools import wraps
 from jwt import ExpiredSignatureError, InvalidTokenError, decode
 
@@ -91,6 +91,17 @@ def api_join_room(username):  # 通过装饰器传递的参数
         return jsonify({"error": "RoomID和UserID都是必须的"}), 400
 
     result, status_code = join_room(room_id, username)
+    return jsonify({"message": result}), status_code
+
+
+@app.route('/api/outroom', methods=['POST'])
+@token_required
+def api_out_room(username):
+    room_id = request.json.get('RoomID')
+    if not room_id:
+        return jsonify({"error": "RoomID是必须的"}), 400
+
+    result, status_code = out_room(room_id, username)
     return jsonify({"message": result}), status_code
 
 
