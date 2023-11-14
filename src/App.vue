@@ -26,7 +26,7 @@ html {
 }
 
 #app {
-  background-color: #c2efd4;
+  background-color: rgb(241, 252, 232);
   /* 用你喜欢的颜色替换这里的值 */
   color: #000;
   /* 文本颜色，可以根据背景颜色调整 */
