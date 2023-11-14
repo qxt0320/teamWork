@@ -36,6 +36,21 @@ const routes: Array<RouteRecordRaw> = [
   name: 'succeedpage',
   component: () => import('../components/SucceedPage.vue')
 },
+  {
+  path: '/houtai',
+  name: 'houtai',
+  component: () => import('../components/HouTai.vue')
+},
+{
+  path: '/houtaizhuce',
+  name: 'houtaizhuce',
+  component: () => import('../components/HouTaiZhuCe.vue')
+},
+{
+  path: '/zhucesucceed',
+  name: 'zhucesucceed',
+  component: () => import('../components/ZhuCeSucceed.vue')
+},
 ]
 
 const router = createRouter({
