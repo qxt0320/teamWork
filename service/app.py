@@ -15,9 +15,9 @@ def login():
     password = request.json.get('password')
 
     if not username or not password:
-        print(username, password)
+        # print(username, password)
         return jsonify({"error": "用户名和密码都是必须的"}), 400
-    print(username, password)
+    # print(username, password)
     user = get_user(username)
     if not user:
         return jsonify({"error": "用户名不存在"}), 401
@@ -25,6 +25,10 @@ def login():
         return jsonify({"error": "密码错误"}), 401
 
     token = generate_token(user['id'])
+
+    # 显示用户登录成功
+    print(user['real_name']+" logged in successfully")
+
     return jsonify({"token": token, "userId": user['id'], "username": user['username']}), 200
 
 
@@ -51,7 +55,34 @@ def api_join_room():
     return jsonify({"token": token, "RoomID": room_id}), 200
 
 
-# 其他API端点...
+@app.route('/auth/register', methods=['POST'])
+def register():
+    # print(request.headers)
+    # print(request.data)  # 打印原始请求数据
+    # print(request.get_json(silent=True))  # 使用 silent=True 防止解析错误
+
+    username = request.json.get('phonenumber')
+    password = request.json.get('password')
+    yourname = request.json.get('yourname')  # 获取 yourname 字段
+
+    #print(username, password, yourname)
+
+    if not username or not password or not yourname:
+        return jsonify({"error": "缺少必要的参数"}), 400
+
+    if get_user(username):
+        return jsonify({"error": "InvalidUserID", "message": "The provided UserID exists."}), 400
+
+    add_user(username, password, yourname)  # 添加 yourname 参数
+
+    # 用户注册成功后，生成令牌
+    token = generate_token(username)
+
+    # 显示用户注册成功
+    print(yourname+" registered successfully")
+
+    return jsonify({"token": token, "message": "User registered successfully"}), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)
