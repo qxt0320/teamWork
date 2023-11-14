@@ -61,7 +61,7 @@ def login():
     if user['password'] != password:
         return jsonify({"error": "密码错误"}), 401
 
-    token = generate_token(user['id'])
+    token = generate_token(username)  # 使用 username 作为参数
 
     # 显示用户登录成功
     print(user['real_name'] + " logged in successfully")
@@ -84,15 +84,14 @@ def api_create_room(username):  # 将参数名称更改为 'username'
 
 
 @app.route('/api/joinroom', methods=['POST'])
-def api_join_room():
+@token_required
+def api_join_room(username):  # 通过装饰器传递的参数
     room_id = request.json.get('RoomID')
-    user_id = request.json.get('UserID')
-    if not room_id or not user_id:
+    if not room_id:
         return jsonify({"error": "RoomID和UserID都是必须的"}), 400
 
-    join_room(room_id, user_id)
-    token = generate_token(user_id)
-    return jsonify({"token": token, "RoomID": room_id}), 200
+    result, status_code = join_room(room_id, username)
+    return jsonify({"message": result}), status_code
 
 
 @app.route('/api/register', methods=['POST'])

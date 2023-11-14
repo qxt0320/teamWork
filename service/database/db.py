@@ -50,13 +50,23 @@ def init_db():
 
     # 创建房间表
     cursor.execute('''
-       CREATE TABLE IF NOT EXISTS rooms (
-           id TEXT PRIMARY KEY,
-           creator_id INTEGER,  -- 新增的列，用于存储创建房间的用户的ID
-           participants TEXT DEFAULT '',
-           FOREIGN KEY (creator_id) REFERENCES users (id)  -- 外键关联到 users 表的 id
-       )
-       ''')
+        CREATE TABLE rooms (
+            id TEXT PRIMARY KEY,
+            creator_username TEXT,
+            participants TEXT DEFAULT '',  -- 添加 participants 列
+            FOREIGN KEY (creator_username) REFERENCES users (username)
+        )
+        ''')
+
+    # 创建房间参与者表
+    cursor.execute('''
+        CREATE TABLE room_participants (
+            room_id TEXT,
+            user_username TEXT,
+            FOREIGN KEY (room_id) REFERENCES rooms (id),
+            FOREIGN KEY (user_username) REFERENCES users (username)
+        )
+        ''')
 
     conn.commit()
     conn.close()
@@ -82,27 +92,57 @@ def get_user(username):
     return user
 
 
-def create_room(room_id, user_id):
+def create_room(room_id, username):
     conn = get_db_connection()
     cursor = conn.cursor()
+
     # 确保 SQL 语句包括 creator_id 列
-    cursor.execute('INSERT INTO rooms (id, creator_id, participants) VALUES (?, ?, ?)', (room_id, user_id, ''))
+    cursor.execute('INSERT INTO rooms (id, creator_username, participants) VALUES (?, ?, ?)',
+                   (room_id, username, username))
+
     conn.commit()
     conn.close()
 
 
-def join_room(room_id, user_id):
+def join_room(room_id, username):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE rooms SET participants = participants || ? || ', ' WHERE id = ?', (user_id, room_id))
+
+    # 验证房间是否存在
+    if not room_exists(room_id):
+        conn.close()
+        return "Room not found", 404
+
+    # 获取房间的参与者列表
+    cursor.execute('SELECT participants FROM rooms WHERE id = ?', (room_id,))
+    room_data = cursor.fetchone()
+    if room_data is None:
+        conn.close()
+        return "Room data not found", 404
+
+    participants_str = room_data[0]
+    participants = participants_str.split(',')
+
+    # 验证用户是否已经在房间中
+    if username in participants:
+        conn.close()
+        return "User already in the room", 400
+
+    # 更新参与者列表
+    participants.append(username)
+    new_participants_str = ','.join(participants)
+
+    cursor.execute('UPDATE rooms SET participants = ? WHERE id = ?', (new_participants_str, room_id))
     conn.commit()
     conn.close()
+    return "User joined the room successfully", 200
 
 
+# 修改 generate_token 函数，接受 username 作为参数
 def generate_token(username):
     expiration_time = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
     token = jwt.encode({'username': username, 'exp': expiration_time}, SECRET_KEY, algorithm='HS256')
-    print("使用以下串生成令牌："+username)
+    print("使用以下串生成令牌：" + username)
     return token.decode('utf-8') if isinstance(token, bytes) else token
 
 
@@ -118,7 +158,7 @@ def room_exists(room_id):
 def user_exists(username):
     conn = get_db_connection()
     cursor = conn.cursor()
-    print("检查用户是否存在："+username)
+    print("检查用户是否存在：" + username)
     cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
     user = cursor.fetchone()
     conn.close()
