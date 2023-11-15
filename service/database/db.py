@@ -192,6 +192,11 @@ def out_room(room_id, username):
     participants = participants_str.split(',')
     creator_username = room_data[1]
 
+    # 检查用户是否在房间中
+    if username not in participants:
+        conn.close()
+        return "User not in room", 403  # 或者其他适当的HTTP状态码
+
     # 如果退出房间的是创建者，需要转交房主给其他用户（如果有其他用户的话）
     if username == creator_username:
         if len(participants) > 1:

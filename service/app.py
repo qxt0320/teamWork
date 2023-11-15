@@ -1,18 +1,50 @@
-# app.py
 import jwt
 from flask import Flask, request, jsonify, abort
+from flask_socketio import SocketIO  # 正确导入
 from database.db import get_user, add_user, create_room, join_room, generate_token, verify_token, room_exists, \
     user_exists, out_room, start_game, get_room_data, update_ready_status
 from functools import wraps
-from jwt import ExpiredSignatureError, InvalidTokenError, decode
-import asyncio
-import websockets
-import json
-from flask_socketio import SocketIO
+from game.game_manager import GameManager  # 修改导入方式
 
 app = Flask(__name__)
+socketio = SocketIO(app)  # 创建 Flask-SocketIO 实例
+game_manager = GameManager(socketio)  # 创建 GameManager 实例
 
 SECRET_KEY = "0f574d86d10ae8778feffc0dc47810907e436a8fc14c2971"
+
+
+# Flask-SocketIO 事件处理器
+@socketio.on('draw_card')
+def on_draw_card(data):
+    """
+    当玩家抽了一张牌时触发。
+    :param data: 包含room_id, card, drawer的数据。
+    """
+    game_manager.start_draw_timer(data['room_id'], data['card'], data['drawer'])
+    # TODO: 实现其他抽牌相关逻辑
+
+
+@socketio.on('lock_card')
+def on_lock_card(data):
+    """
+    当下家决定锁定上家抽的牌时触发。
+    :param data: 包含room_id, card, locker的数据。
+    """
+    game_manager.lock_card(data['room_id'], data['card'], data['locker'])
+    # TODO: 实现其他锁定卡牌相关逻辑
+
+
+@socketio.on('keep_or_redraw')
+def on_keep_or_redraw(data):
+    """
+    当上家决定保持或重抽一张牌时触发。
+    :param data: 包含room_id, drawer, decision的数据。
+    """
+    game_manager.keep_or_redraw(data['room_id'], data['drawer'], data['decision'])
+    # TODO: 实现其他保持或重抽相关逻辑
+
+
+# ... 其他 Flask 路由和事件处理器 ...
 
 
 # 装饰器，用于验证令牌
@@ -106,6 +138,8 @@ def api_out_room(username):
         return jsonify({"error": "RoomID是必须的"}), 400
 
     result, status_code = out_room(room_id, username)
+    if status_code != 200:
+        return jsonify({"error": result}), status_code
     return jsonify({"message": result}), status_code
 
 
