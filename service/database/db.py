@@ -54,7 +54,9 @@ def init_db():
             id TEXT PRIMARY KEY,
             creator_username TEXT,
             participants TEXT DEFAULT '',  -- 添加 participants 列
-            FOREIGN KEY (creator_username) REFERENCES users (username)
+            player1_ready BOOLEAN DEFAULT FALSE, -- 新增 player1_ready 列
+            player2_ready BOOLEAN DEFAULT FALSE,  -- 新增 player2_ready 列
+            player3_ready BOOLEAN DEFAULT FALSE  -- 新增 player3_ready 列
         )
         ''')
 
@@ -104,7 +106,7 @@ def create_room(room_id, username):
     conn.close()
 
 
-def join_room(room_id, username, max_participants=2):
+def join_room(room_id, username, max_participants=3):
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -208,6 +210,50 @@ def out_room(room_id, username):
     conn.close()
 
     return "User left the room", 200
+
+
+def start_game(room_id):
+    # 在这里添加游戏开始的逻辑
+    pass
+
+
+def get_room_data(room_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM rooms WHERE id = ?', (room_id,))
+    room_data = cursor.fetchone()
+    conn.close()
+
+    if room_data:
+        participants = room_data['participants'].split(',')
+        return {
+            'id': room_data['id'],
+            'creator_username': room_data['creator_username'],
+            'participants': room_data['participants'],
+            'player1_username': participants[0] if len(participants) > 0 else None,
+            'player2_username': participants[1] if len(participants) > 1 else None,
+            'player3_username': participants[2] if len(participants) > 2 else None,
+            'player1_ready': room_data['player1_ready'],
+            'player2_ready': room_data['player2_ready'],
+            'player3_ready': room_data['player3_ready']
+        }
+    else:
+        return None
+
+
+def update_ready_status(room_id, player_field, ready_status):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # 确保字段名有效
+    if player_field not in ['player1_ready', 'player2_ready']:
+        conn.close()
+        return "Invalid player field", 400
+
+    # 更新准备状态字段
+    cursor.execute(f'UPDATE rooms SET {player_field} = ? WHERE id = ?', (ready_status, room_id))
+    conn.commit()
+    conn.close()
 
 
 # 调用 init_db 函数以初始化数据库
