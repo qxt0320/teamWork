@@ -2,9 +2,12 @@
 import jwt
 from flask import Flask, request, jsonify, abort
 from database.db import get_user, add_user, create_room, join_room, generate_token, verify_token, room_exists, \
-    user_exists, out_room
+    user_exists, out_room, start_game, get_room_data, update_ready_status
 from functools import wraps
 from jwt import ExpiredSignatureError, InvalidTokenError, decode
+import asyncio
+import websockets
+import json
 
 app = Flask(__name__)
 
@@ -136,6 +139,42 @@ def register():
     print(yourname + " registered successfully")
 
     return jsonify({"token": token, "message": "User registered successfully"}), 200
+
+
+@app.route('/api/readygame', methods=['POST'])
+@token_required
+def api_ready_game(username):
+    room_id = request.json.get('RoomID')
+    player_ready = request.json.get('ReadyStatus')  # 准备状态，True 或 False
+
+    if not room_id or player_ready is None:
+        return jsonify({"error": "RoomID 和 ReadyStatus 是必需的"}), 400
+
+    # 检查房间是否存在
+    if not room_exists(room_id):
+        return jsonify({"error": "Room not found"}), 404
+
+    # 获取房间信息
+    room_data = get_room_data(room_id)
+
+    # 识别并更新玩家的准备状态
+    if 'player1_username' in room_data and username == room_data['player1_username']:
+        update_ready_status(room_id, 'player1_ready', player_ready)
+    elif 'player2_username' in room_data and username == room_data['player2_username']:
+        update_ready_status(room_id, 'player2_ready', player_ready)
+    elif 'player3_username' in room_data and username == room_data['player3_username']:
+        update_ready_status(room_id, 'player3_ready', player_ready)
+    else:
+        return jsonify({"error": "You are not a participant in this room"}), 403
+
+    # 重新获取房间信息以检查所有玩家是否已准备
+    updated_room_data = get_room_data(room_id)
+
+    # 检查是否三名玩家都已准备
+    if all([updated_room_data.get(f'player{i}_ready') for i in range(1, 4)]):
+        start_game(room_id)
+
+    return jsonify({"message": "Ready status updated successfully"}), 200
 
 
 if __name__ == '__main__':
