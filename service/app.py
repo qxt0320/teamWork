@@ -8,6 +8,7 @@ from jwt import ExpiredSignatureError, InvalidTokenError, decode
 import asyncio
 import websockets
 import json
+from flask_socketio import SocketIO
 
 app = Flask(__name__)
 
