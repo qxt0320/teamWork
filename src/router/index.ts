@@ -36,6 +36,41 @@ const routes: Array<RouteRecordRaw> = [
   name: 'succeedpage',
   component: () => import('../components/SucceedPage.vue')
 },
+  {
+  path: '/houtai',
+  name: 'houtai',
+  component: () => import('../components/HouTai.vue')
+},
+{
+  path: '/houtaizhuce',
+  name: 'houtaizhuce',
+  component: () => import('../components/HouTaiZhuCe.vue')
+},
+{
+  path: '/zhucesucceed',
+  name: 'zhucesucceed',
+  component: () => import('../components/ZhuCeSucceed.vue')
+},
+  {
+    path: '/gameroom',
+    name: 'gameroom',
+    component: () => import('../components/GameRoom.vue')
+  },
+  {
+    path: '/createroom',
+    name: 'createroom',
+    component: () => import('../components/CreateRoom.vue')
+  },
+  {
+    path: '/joinroom',
+    name: 'joinroom',
+    component: () => import('../components/JoinRoom.vue')
+  },
+  {
+    path: '/roomchoose',
+    name: 'roomchoose',
+    component: () => import('../components/RoomChoose.vue')
+  },
 ]
 
 const router = createRouter({

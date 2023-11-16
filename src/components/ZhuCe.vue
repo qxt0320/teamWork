@@ -1,9 +1,11 @@
 <template>  
   <div class="container">  
     <img src="../imgaes/zuche.png" alt="Logo" class="logo">  
-    <label for="phone">手机号：</label>  
+    <label for="name"> 昵称:</label>  
+    <input type="text" placeholder="请输入昵称" v-model="name"><br>  
+    <label for="phone">手机号: </label>  
     <input type="text" placeholder="请输入手机号" v-model="phoneNumber"><br>  
-    <label for="password">密码：</label>  
+    <label for="password">密码:</label>  
     <input type="password" placeholder="请输入密码" v-model="password"><br>  
     <router-link to="/SucceedPage">
     <button @click="register">注册</button>  
@@ -32,11 +34,15 @@ export default {
 <style scoped>  
 
 
-
 .container {  
-  background-color: rgb(241, 252, 232);  
-  height: 100vh;  
-  text-align: center;  
+
+  align-items: center;
+  flex-direction: column;
+  background-color: rgb(241, 252, 232);
+
+  height: 100vh;
+  padding: 250px 450px;
+ 
   
 }  
 input {  
@@ -45,8 +51,8 @@ width: 200px;
 padding: 10px;  
 }
 .logo {  
-  width: 400px;  /* 调整宽度和高度 */  
-  height: 400px;  /* 调整宽度和高度 */  
+  width: 500px;  /* 调整宽度和高度 */  
+  height: 500px;  /* 调整宽度和高度 */  
   position: absolute;  
   right: 20px;  
   bottom: 20px;  
@@ -54,6 +60,7 @@ padding: 10px;
   
 
 button {  
+  padding: 10px 50px;  
   font-size: 16px;  
   background-color: #007bff;  
   color: #fff;  
