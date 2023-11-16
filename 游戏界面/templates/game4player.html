@@ -6,7 +6,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
   <style>
     #app {
-      background-image: url('images/bg44.jpg');
+      background-image: url('../static/images/bg44.jpg');
       background-size: cover;
       background-position: center;
       height: 100vh;
@@ -33,11 +33,11 @@
       font-size: 20px;
     }
     .hidden {
-      background-image: url('images/back.gif'); /* 对手的牌使用背景图片back.gif */
+      background-image: url('../static/images/back.gif'); /* 对手的牌使用背景图片back.gif */
       color: transparent;
     }
     .player-card {
-      /*background-image: url('images/4.png');*/
+      /*background-image: url('../static/images/4.png');*/
       z-index: 99;
       position: absolute;
       top: 530px;
@@ -62,6 +62,12 @@
       top: 140px;
       right:160px;
       cursor: pointer;
+    }
+
+    .out-cards{
+      position: absolute;
+      top: 300px;
+      right: 240px;
     }
 
     .card-animation-enter-active, .card-animation-leave-active {
@@ -126,10 +132,10 @@
 <body>
 
 <div id="app">
-  <span class="player-name player1">玩家1：{{ player1Name }}</span>
-  <span class="player-name player2">玩家2：{{ player2Name }}</span>
-  <span class="player-name player3">玩家3：{{ player3Name }}</span>
-  <span class="player-name myself">我：{{ myName }}</span>
+  <span class="player-name player1" v-text="player1Name"></span>
+  <span class="player-name player2" v-text="player2Name"></span>
+  <span class="player-name player3" v-text="player3Name"></span>
+  <span class="player-name myself" v-text="myName"></span>
 
   <div class="opponent1-cards">
     <transition-group name="card-animation" tag="div" class="opponent-cards">
@@ -140,7 +146,6 @@
       </div>
     </transition-group>
   </div>
-
   <div class="opponent2-cards">
     <transition-group name="card-animation" tag="div" class="opponent-cards">
       <div v-for="(card, index) in opponent2Cards" :key="'opponent2-' + index"
@@ -150,7 +155,6 @@
       </div>
     </transition-group>
   </div>
-
   <div class="opponent3-cards">
     <transition-group name="card-animation" tag="div" class="opponent-cards">
       <div v-for="(card, index) in opponent3Cards" :key="'opponent3-' + index"
@@ -160,8 +164,6 @@
       </div>
     </transition-group>
   </div>
-
-
   <div>
     <transition-group name="card-animation" tag="div" class="player-cards">
       <!-- 修改部分：为每张牌添加点击事件处理 -->
@@ -173,9 +175,19 @@
     </transition-group>
 
   </div>
+  <div class="out-cards">
+    <transition-group name="card-animation" tag="div" class="player-cards">
+      <img v-for="(card, index) in outCards" :key="index"
+           :src="getCardImage(card)" class="card player-card"
+           :style="{ top: '20px', left: -600 + index * 10 + 'px' }" />
+    </transition-group>
+  </div>
 
   <div class="footer">
     <button @click="dealCards" >Deal Cards</button>
+  </div>
+  <div class>
+    <button @click="handlePlayCard" v-text="playButtonLabel"></button>
   </div>
 </div>
 
@@ -183,52 +195,104 @@
   new Vue({
     el: '#app',
     data: {
+      playButtonLabel: '出牌',
       player1Name: 'abc', // 玩家姓名
       player2Name: 'abc',
       player3Name: 'abc',
       myName: 'abc',
+
       playerCards: [],
       opponent1Cards: [],
       opponent2Cards: [],
       opponent3Cards: [],
+      outCards: [],
       showOpponentCards: false,
+
       cardImages: { // 存储扑克牌图片路径
-        '黑桃A': 'images/spadesA.png', '黑桃2': 'images/spades2.png', '黑桃3': 'images/spades3.png',
-        '黑桃4': 'images/spades4.png', '黑桃5': 'images/spades5.png', '黑桃6': 'images/spades6.png',
-        '黑桃7': 'images/spades7.png', '黑桃8': 'images/spades8.png', '黑桃9': 'images/spades9.png',
-        '黑桃10': 'images/spades10.png', '黑桃J': 'images/spadesJ.png', '黑桃Q': 'images/spadesQ.png',
-        '黑桃K': 'images/spadesK.png',
-        '红桃A': 'images/heartA.png', '红桃2': 'images/heart2.png', '红桃3': 'images/heart3.png',
-        '红桃4': 'images/heart4.png', '红桃5': 'images/heart5.png', '红桃6': 'images/heart6.png',
-        '红桃7': 'images/heart7.png', '红桃8': 'images/heart8.png', '红桃9': 'images/heart9.png',
-        '红桃10': 'images/heart10.png', '红桃J': 'images/heartJ.png', '红桃Q': 'images/heartQ.png',
-        '红桃K': 'images/heartK.png',
-        '方块A': 'images/diamondA.png', '方块2': 'images/diamond2.png', '方块3': 'images/diamond3.png',
-        '方块4': 'images/diamond4.png', '方块5': 'images/diamond5.png', '方块6': 'images/diamond6.png',
-        '方块7': 'images/diamond7.png', '方块8': 'images/diamond8.png', '方块9': 'images/diamond9.png',
-        '方块10': 'images/diamond10.png', '方块J': 'images/diamondJ.png', '方块Q': 'images/diamondQ.png',
-        '方块K': 'images/diamondK.png',
-        '梅花A': 'images/clubA.png', '梅花2': 'images/club2.png', '梅花3': 'images/club3.png',
-        '梅花4': 'images/club4.png', '梅花5': 'images/club5.png', '梅花6': 'images/club6.png',
-        '梅花7': 'images/club7.png', '梅花8': 'images/club8.png', '梅花9': 'images/club9.png',
-        '梅花10': 'images/club10.png', '梅花J': 'images/clubJ.png', '梅花Q': 'images/clubQ.png',
-        '梅花K': 'images/clubK.png',
+        '黑桃A': '../static/images/spadesA.png', '黑桃2': '../static/images/spades2.png', '黑桃3': '../static/images/spades3.png',
+        '黑桃4': '../static/images/spades4.png', '黑桃5': '../static/images/spades5.png', '黑桃6': '../static/images/spades6.png',
+        '黑桃7': '../static/images/spades7.png', '黑桃8': '../static/images/spades8.png', '黑桃9': '../static/images/spades9.png',
+        '黑桃10': '../static/images/spades10.png', '黑桃J': '../static/images/spadesJ.png', '黑桃Q': '../static/images/spadesQ.png',
+        '黑桃K': '../static/images/spadesK.png',
+        '红桃A': '../static/images/heartA.png', '红桃2': '../static/images/heart2.png', '红桃3': '../static/images/heart3.png',
+        '红桃4': '../static/images/heart4.png', '红桃5': '../static/images/heart5.png', '红桃6': '../static/images/heart6.png',
+        '红桃7': '../static/images/heart7.png', '红桃8': '../static/images/heart8.png', '红桃9': '../static/images/heart9.png',
+        '红桃10': '../static/images/heart10.png', '红桃J': '../static/images/heartJ.png', '红桃Q': '../static/images/heartQ.png',
+        '红桃K': '../static/images/heartK.png',
+        '方块A': '../static/images/diamondA.png', '方块2': '../static/images/diamond2.png', '方块3': '../static/images/diamond3.png',
+        '方块4': '../static/images/diamond4.png', '方块5': '../static/images/diamond5.png', '方块6': '../static/images/diamond6.png',
+        '方块7': '../static/images/diamond7.png', '方块8': '../static/images/diamond8.png', '方块9': '../static/images/diamond9.png',
+        '方块10': '../static/images/diamond10.png', '方块J': '../static/images/diamondJ.png', '方块Q': '../static/images/diamondQ.png',
+        '方块K': '../static/images/diamondK.png',
+        '梅花A': '../static/images/clubA.png', '梅花2': '../static/images/club2.png', '梅花3': '../static/images/club3.png',
+        '梅花4': '../static/images/club4.png', '梅花5': '../static/images/club5.png', '梅花6': '../static/images/club6.png',
+        '梅花7': '../static/images/club7.png', '梅花8': '../static/images/club8.png', '梅花9': '../static/images/club9.png',
+        '梅花10': '../static/images/club10.png', '梅花J': '../static/images/clubJ.png', '梅花Q': '../static/images/clubQ.png',
+        '梅花K': '../static/images/clubK.png',
       },
       selectedCardIndex: -1,  // 记录被选中的牌的索引
       selectedOpponentCardIndex: -1 // 记录被选中的对手玩家牌的索引
     },
     methods: {
+      // dealCards: function() {
+      //   // 模拟发牌过程，实际应用中可以根据游戏规则编写具体的发牌逻辑
+      //   this.playerCards = ['黑桃A', '红桃K', '梅花Q', '方块J', '红桃10', '梅花9', '方块8']; // 玩家的牌
+      //   this.opponent1Cards = ['?', '?', '?', '?', '?', '?', '?']; // 对手1的牌
+      //   this.opponent2Cards = ['?', '?', '?', '?', '?', '?', '?']; // 对手2的牌
+      //   this.opponent3Cards = ['?', '?', '?', '?', '?', '?', '?']; // 对手2的牌
+      //   this.showOpponentCards = true; // 显示对手的牌
+      // },
+
       dealCards: function() {
-        // 模拟发牌过程，实际应用中可以根据游戏规则编写具体的发牌逻辑
-        this.playerCards = ['黑桃A', '红桃K', '梅花Q', '方块J', '红桃10', '梅花9', '方块8']; // 玩家的牌
-        this.opponent1Cards = ['?', '?', '?', '?', '?', '?', '?']; // 对手1的牌
-        this.opponent2Cards = ['?', '?', '?', '?', '?', '?', '?']; // 对手2的牌
-        this.opponent3Cards = ['?', '?', '?', '?', '?', '?', '?']; // 对手2的牌
-        this.showOpponentCards = true; // 显示对手的牌
+        // 使用 fetch 获取数据
+        fetch('/api/get_cards')
+                .then(response => response.json())
+                .then(data => {
+                  // 更新前端数据
+                  this.playerCards = data.playerCards;
+                  this.opponent1Cards = data.opponent1Cards;
+                  this.opponent2Cards = data.opponent2Cards;
+                  this.opponent3Cards = data.opponent3Cards;
+                  this.showOpponentCards = true;
+                })
+                .catch(error => {
+                  console.error('Error fetching data from the backend:', error);
+                });
       },
+
+      handlePlayCard: function(){
+        if (this.playButtonLabel === '出牌') {
+          this.playButtonLabel = '确认出牌';  // 点击按钮后将按钮文字改为“确认出牌”
+        } else if (this.playButtonLabel === '确认出牌') {
+          if (this.selectedCardIndex !== -1) {
+            const selectedCard = this.playerCards[this.selectedCardIndex];
+            if (selectedCard === 'switch' || selectedCard === 'swap') {
+              // 如果选择的牌是“turn”或者“swap”，则移动到指定位置
+              // 这里假设存在 playCard 方法用于处理出牌逻辑
+              this.playCard(selectedCard,this.selectedCardIndex);
+            } else {
+              alert('此牌不是功能牌');  // 给出提示
+            }
+          }
+          this.playButtonLabel = '出牌';  // 恢复按钮文字为“出牌”
+        }
+      },
+
+      playCard: function(card, index) {
+        // 处理出牌逻辑，将选中的牌移动到指定位置
+        // 这里可以添加移动牌的动画效果
+
+        // 删除选中的牌
+        this.playerCards.splice(index, 1);
+        this.outCards.push(card);
+        // 强制更新组件
+        this.$forceUpdate();
+      },
+
       getCardImage: function(card) {
         return this.cardImages[card]; // 根据输入的牌面获取对应的图片路径
       },
+
       toggleCardPosition: function(index) {
         if (this.selectedCardIndex === index) {
           this.selectedCardIndex = -1;  // 如果已经选中，则取消选中状态
@@ -236,6 +300,7 @@
           this.selectedCardIndex = index;  // 否则设置为选中状态
         }
       },
+
       toggleOpponent1CardPosition: function(cardIndex) {
         if (this.selectedOpponent1CardIndex === cardIndex) {
           this.selectedOpponent1CardIndex = -1; // 取消选中状态
@@ -247,6 +312,7 @@
           this.$forceUpdate(); // 强制更新组件
         }
       },
+
       toggleOpponent2CardPosition: function(cardIndex) {
         if (this.selectedOpponent2CardIndex === cardIndex) {
           this.selectedOpponent2CardIndex = -1; // 取消选中状态
@@ -258,6 +324,7 @@
           this.$forceUpdate(); // 强制更新组件
         }
       },
+
       toggleOpponent3CardPosition: function(cardIndex) {
         if (this.selectedOpponent3CardIndex === cardIndex) {
           this.selectedOpponent3CardIndex = -1; // 取消选中状态
@@ -269,6 +336,7 @@
           this.$forceUpdate(); // 强制更新组件
         }
       },
+
       restoreOpponentCardPosition: function() {
         this.selectedOpponent1CardIndex = -1; // 恢复玩家1的牌的位置
         this.selectedOpponent2CardIndex = -1; // 恢复玩家2的牌的位置
@@ -282,7 +350,5 @@
     }
   })
 </script>
-
-
 </body>
 </html>
