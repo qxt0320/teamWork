@@ -1,6 +1,6 @@
 <template>  
     <div class="container">  
-      <img src="../images/logo.png" alt="Logo" class="logo">  
+      <img src="../imgaes/logo.png" alt="Logo" class="logo">  
       <h1>抽乌龟</h1>  
       <label for="username">账号：</label>  
       <input type="text" placeholder="请输入账号"><br>  
@@ -15,16 +15,50 @@
     </div>  
   </template>  
     
-  <script lang="ts">  
-  export default {  
-    methods: {  
-      login() {  
-        // 在这里执行登录逻辑  
-        console.log('Login button clicked');  
-      }  
-    }  
-  }  
-  </script>  
+    <script lang="js">
+    export default {
+  data() {
+    return {
+      phonenumber: '',
+      password: '',
+
+    };
+  },
+  methods: {
+    async login() {
+      try {
+        const response = await fetch('http://api2.andylive.cn', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            phonenumber: this.phonenumber,
+            password: this.password
+          })
+        });
+        if (response.status === 200) {
+          const data = await response.json();
+          console.log('Login successful', data);
+          // 保存token、userId和username到本地存储或 Vuex 等状态管理器中
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('userId', data.userId);
+          localStorage.setItem('username', data.username);
+          // 其他成功逻辑处理
+        } else {
+          this.loginError = '登录失败，请检查用户名和密码';
+          console.error('Login failed', error);
+          // 其他失败逻辑处理
+        }
+      } catch (error) {
+        this.loginError = '登录失败，请检查用户名和密码';
+        console.error('Login failed', error);
+        // 其他失败逻辑处理
+      }
+    }
+  }
+};
+    </script>
     
     <style scoped>  
 
@@ -35,7 +69,7 @@
     
    
     height: 100vh;
-    padding: 20px;
+    padding: 50px;
         text-align: center;   
       
     }  

@@ -1,6 +1,6 @@
 <template>  
     <div class="container">  
-        <img src="../images/yonghu.png" alt="Logo" class="logo">  
+        <img src="../imgaes/yonghu.png" alt="Logo" class="logo">  
     
       <div>  
         <i class="fa fa-user user-icon"></i>  
@@ -15,25 +15,54 @@
       </div>  
     </div>  
   </template>  
-    
-  <script>  
-  export default {  
-    data() {  
-      return {  
-        username: '',  
-        password: '',  
-        userImage: 'yonghu.png',  
-        userImageAlt: '描述图片的文字',  
-        registerURL: 'houtai1.html'  
-      }  
-    },  
-    methods: {  
-      login() {  
-        // 在这里添加登录逻辑。可以使用 this.username 和 this.password 来获取输入的值。例如，你可以将这些值发送到后端服务器，或者存储在本地存储中等等。  
-      }  
-    }  
-  }  
-  </script>
+   <script lang="js">
+   export default {
+     data() {
+       return {
+         username: '',
+         phonenumber: '',
+         password: '',
+         registerError: ''
+       };
+     },
+     methods: {
+       async register() {
+         try {
+           const response = await fetch('http://api2.andylive.cn/register', {
+             method: 'POST',
+             headers: {
+               'Content-Type': 'application/json'
+             },
+             body: JSON.stringify({
+               username: this.username,
+               phonenumber: this.phonenumber,
+               password: this.password
+             })
+           });
+           if (response.status === 200) {
+             const data = await response.json();
+             console.log('Registration successful', data);
+             // 保存token、userId和username到本地存储或 Vuex 等状态管理器中
+             localStorage.setItem('token', data.token);
+             localStorage.setItem('userId', data.userId);
+             localStorage.setItem('username', data.username);
+             // 其他成功逻辑处理
+           } else {
+             this.registerError = '注册失败，请检查用户名、手机号和密码';
+             console.error('Registration failed', error);
+             // 其他失败逻辑处理
+           }
+         } catch (error) {
+           this.registerError = '注册失败，请检查用户名、手机号和密码';
+           console.error('Registration failed', error);
+           // 其他失败逻辑处理
+         }
+       }
+     }
+   };
+</script>
+   
+
   <style>
 
   .my-image {
