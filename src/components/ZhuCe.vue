@@ -1,17 +1,18 @@
-<template>  
-  <div class="container">  
-    <img src="../images/zuche.png" alt="Logo" class="logo">  
-    <label for="name"> 昵称:</label>  
-    <input type="text" placeholder="请输入昵称" v-model="name"><br>  
-    <label for="phone">手机号: </label>  
-    <input type="text" placeholder="请输入手机号" v-model="phoneNumber"><br>  
-    <label for="password">密码:</label>  
+<template>
+  <div class="container">
+    <img src="../images/zuche.png" alt="Logo" class="logo">
+    <label for="name"> 昵称: </label>
+    <input type="text" placeholder="请输入昵称" v-model="name"><br>
+    <label for="phone">账号: </label>
+    <input type="text" placeholder="请输入账号" v-model="phoneNumber"><br>
+    <label for="password">密码: </label>
     <input type="password" placeholder="请输入密码" v-model="password"><br>  
     <router-link to="/SucceedPage">
     <button @click="register">注册</button>  
   </router-link>
-  </div>  
+  </div>
 </template>  
+  
 <script lang="js">
 export default {
   data() {
@@ -58,6 +59,7 @@ export default {
   }
 };
 </script>
+  
 <style scoped>  
 
 
@@ -66,12 +68,18 @@ export default {
   align-items: center;
   flex-direction: column;
   background-color: rgb(241, 252, 232);
-  text-align: center;   
+
   height: 100vh;
-  padding: 250px 450px;
- 
+  padding: 250px 250px;
+  margin-left: -300px;
   
-}  
+}
+
+.component {
+  width: 200%; /* 增大组件的宽度为容器的两倍 */
+  height: 200%; /* 增大组件的高度为容器的两倍 */
+}
+
 input {  
 margin-bottom: 20px;  
 width: 200px;  
@@ -91,7 +99,10 @@ button {
   font-size: 16px;  
   background-color: #007bff;  
   color: #fff;  
- left:50px;
+  border: none;  
+  border-radius: 5px;  
+  cursor: pointer;
+  margin-left: 60px;
 }  
   
 button:hover {  
