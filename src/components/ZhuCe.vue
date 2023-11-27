@@ -1,6 +1,6 @@
 <template>  
   <div class="container">  
-    <img src="../imgaes/zuche.png" alt="Logo" class="logo">  
+    <img src="../images/zuche.png" alt="Logo" class="logo">  
     <label for="name"> 昵称:</label>  
     <input type="text" placeholder="请输入昵称" v-model="name"><br>  
     <label for="phone">手机号: </label>  
