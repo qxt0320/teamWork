@@ -1,14 +1,15 @@
 <template>
     <div class="container">
-      <router-link to="/gameplay">
+      <a href="http://127.0.0.1:5000">
         <button class="custom-button" @click="type3">
           <img src="../images/threeroom.jpg" alt="" class="ThreeRoom">
-        </button></router-link>
-  
-      <router-link to="/gameplay">
+        </button>
+      </a>
+
+      <a href="http://127.0.0.1:5000">
         <button class="custom-button" @click="type4">
           <img src="../images/fourroom.jpg" alt="" class="FourRoom">
-        </button></router-link>
+        </button></a>
       </div>
       <div class="music-container">
         <img src="../images/music-off.png" alt="" class="MusicOFF">

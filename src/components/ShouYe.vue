@@ -1,33 +1,33 @@
-<template>  
-    <div class="container">  
-      <img src="../imgaes/logo.png" alt="Logo" class="logo">  
-      <h1>抽乌龟</h1>  
-      <label for="username">账号：</label>  
-      <input type="text" placeholder="请输入账号"><br>  
-      <label for="password">密码：</label>  
-      <input type="password" placeholder="请输入密码"><br>  
-      <router-link to="/zhuce">
-      <a href="zhuce.html">新用户注册</a><br>  
-     
-      
+<template>
+  <div class="container">
+    <img src="../images/logo.png" alt="Logo" class="logo">
+    <h1>抽乌龟</h1>
+    <label for="username">账号：</label>
+    <input type="text" placeholder="请输入账号" v-model="phonenumber"><br>
+    <label for="password">密码：</label>
+    <input type="password" placeholder="请输入密码" v-model="password"><br>
+    <button @click="login">登录</button>
+    <p v-if="loginError">{{ loginError }}</p>
+    <router-link to="/zhuce">
+      <a href="ZhuCe.vue">新用户注册</a><br>
     </router-link>
-    <button @click="login">登录</button>  
-    </div>  
-  </template>  
-    
-    <script lang="js">
-    export default {
+  </div>
+</template>
+
+
+<script lang="js">
+export default {
   data() {
     return {
       phonenumber: '',
       password: '',
-
+      loginError: ''
     };
   },
   methods: {
     async login() {
       try {
-        const response = await fetch('http://api2.andylive.cn', {
+        const response = await fetch('http://api2.andylive.cn/api/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -40,25 +40,23 @@
         if (response.status === 200) {
           const data = await response.json();
           console.log('Login successful', data);
-          // 保存token、userId和username到本地存储或 Vuex 等状态管理器中
           localStorage.setItem('token', data.token);
           localStorage.setItem('userId', data.userId);
           localStorage.setItem('username', data.username);
-          // 其他成功逻辑处理
+          this.$router.push('/GameStart');
         } else {
-          this.loginError = '登录失败，请检查用户名和密码';
-          console.error('Login failed', error);
-          // 其他失败逻辑处理
+          const errorData = await response.json();
+          this.loginError = '登录失败: ' + errorData.error;
         }
       } catch (error) {
-        this.loginError = '登录失败，请检查用户名和密码';
-        console.error('Login failed', error);
-        // 其他失败逻辑处理
+        this.loginError = '登录失败，请检查网络连接';
+        console.error('Login error', error);
       }
     }
   }
 };
-    </script>
+</script>
+
     
     <style scoped>  
 
@@ -67,9 +65,11 @@
       background-color: rgb(241, 252, 232);  
       
     
-   
+   position:fixed;
+      top:100px;
+
     height: 100vh;
-    padding: 50px;
+    padding: 20px;
         text-align: center;   
       
     }  

@@ -13,9 +13,10 @@
     </div>
 
     <!-- 点击按钮时触发 saveData 方法 -->
-    <router-link to="/roomchoose">
+
       <button @click="saveData" class="create-button">创建房间</button>
-    </router-link>
+      <p v-if="createRoomError">{{ createRoomError }}</p> <!-- 用于显示错误消息 -->
+
   </div>
 
   <!-- 音乐容器 -->
@@ -32,20 +33,51 @@
 export default {
   data() {
     return {
-      inputData: ['', '', '', ''], // 初始化为四个空字符串
+      inputData: ['', '', '', ''],
+      RoomID: '',
+      createRoomError: '', // 添加用于存储错误信息的属性
     };
   },
   methods: {
-    saveData() {
-      // 将 inputData 数组连接成字符串并赋值给 RoomID
+    async saveData() {
       this.RoomID = this.inputData.join('');
-      
-      // 在这里可以处理保存数据的逻辑，例如将数据发送到服务器或在本地存储中保存
-      console.log('Saved Data:', this.RoomID);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        this.createRoomError = '未授权访问，请先登录';
+        return;
+      }
+
+      try {
+        const response = await fetch('http://api2.andylive.cn/api/createroom', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            RoomID: this.RoomID
+          })
+        });
+
+        if (response.status === 200) {
+          const data = await response.json();
+          console.log('Room created successfully', data);
+          // 可以在这里添加跳转逻辑
+          this.$router.push('/nextPage'); // 替换为实际的路由
+        } else {
+          const errorData = await response.json();
+          this.createRoomError = errorData.error || '创建房间失败';
+        }
+      } catch (error) {
+        this.createRoomError = '网络错误或服务器不可达';
+        console.error('Error creating room', error);
+      }
     },
   },
 };
 </script>
+
+
 
 <style scoped>
 .create-container {

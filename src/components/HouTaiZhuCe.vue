@@ -1,6 +1,6 @@
 <template>  
     <div class="container">  
-        <img src="../imgaes/yonghu.png" alt="Logo" class="logo">  
+        <img src="../images/yonghu.png" alt="Logo" class="logo">
     
       <div>  
         <i class="fa fa-user user-icon"></i>  
@@ -8,62 +8,59 @@
         <input type="text" v-model="username" placeholder="请输入账号"><br>  
         <i class="fa fa-lock password-icon"></i>  
         <label for="password" style="padding-left: 30px;">密码：</label>  
-        <input type="password" v-model="password" placeholder="请输入密码"><br>  
-        <router-link to="/zhucesucceed">
-        <button @click="login">注册</button>  
-    </router-link>
+        <input type="password" v-model="password" placeholder="请输入密码"><br>
+        <button @click="register">注册</button> <!-- 更新为调用register方法 -->
+        <p v-if="registerError" style="color: red;">{{ registerError }}</p>
       </div>  
     </div>  
-  </template>  
-   <script lang="js">
-   export default {
-     data() {
-       return {
-         username: '',
-         phonenumber: '',
-         password: '',
-         registerError: ''
-       };
-     },
-     methods: {
-       async register() {
-         try {
-           const response = await fetch('http://api2.andylive.cn/register', {
-             method: 'POST',
-             headers: {
-               'Content-Type': 'application/json'
-             },
-             body: JSON.stringify({
-               username: this.username,
-               phonenumber: this.phonenumber,
-               password: this.password
-             })
-           });
-           if (response.status === 200) {
-             const data = await response.json();
-             console.log('Registration successful', data);
-             // 保存token、userId和username到本地存储或 Vuex 等状态管理器中
-             localStorage.setItem('token', data.token);
-             localStorage.setItem('userId', data.userId);
-             localStorage.setItem('username', data.username);
-             // 其他成功逻辑处理
-           } else {
-             this.registerError = '注册失败，请检查用户名、手机号和密码';
-             console.error('Registration failed', error);
-             // 其他失败逻辑处理
-           }
-         } catch (error) {
-           this.registerError = '注册失败，请检查用户名、手机号和密码';
-           console.error('Registration failed', error);
-           // 其他失败逻辑处理
-         }
-       }
-     }
-   };
-</script>
-   
+  </template>
 
-  <style>
+<script lang="js">
+export default {
+  data() {
+    return {
+      username: '1', // 如果你的API不需要这个字段，这行可以删除
+      phonenumber: '',
+      password: '',
+      registerError: ''
+    };
+  },
+  methods: {
+    async register() {
+      try {
+        const response = await fetch('http://api2.andylive.cn/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            phonenumber: this.phonenumber,
+            password: this.password,
+            yourname: this.username // 如果API不需要这个字段，这行可以注释或删除
+          })
+        });
+        if (response.status === 200) {
+          const data = await response.json();
+          console.log('Registration successful', data);
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('userId', data.userId);
+          // 这里的data.username应根据实际返回的数据结构进行调整
+          localStorage.setItem('username', data.username || this.phonenumber);
+          this.$router.push('/zhucesucceed'); // 假设您有一个注册成功的路由
+        } else {
+          const errorData = await response.json();
+          this.registerError = errorData.error || '注册失败，请检查信息是否正确';
+        }
+      } catch (error) {
+        this.registerError = '注册请求失败，请检查网络连接';
+        console.error('Registration failed', error);
+      }
+    }
+  }
+};
+</script>
+
+<style>
 
   .my-image {
     width: 80px;

@@ -13,9 +13,9 @@
     </div>
 
     <!-- 进入房间按钮 -->
-    <router-link to="/gameplay">
+
       <button @click="saveData" class="join-button">进入房间</button>
-    </router-link>
+      <p v-if="joinRoomError">{{ joinRoomError }}</p>
   </div>
 
   <!-- 音乐控制容器 -->
@@ -28,25 +28,52 @@
   <img src="../images/IMG_6933.png" alt="" class="img2">
 </template>
 
-  
+
 <script>
 export default {
   data() {
     return {
-      inputData: ['', '', '', ''], // 初始化为四个空字符串
+      inputData: ['', '', '', ''],
+      joinRoomError: '', // 用于存储加入房间错误信息
     };
   },
   methods: {
-    saveData() {
-      // 将 inputData 数组连接成字符串并赋值给 RoomID
-      this.RoomID = this.inputData.join('');
-      
-      // 在这里可以处理保存数据的逻辑，例如将数据发送到服务器或在本地存储中保存
-      console.log('Saved Data:', this.RoomID);
+    async saveData() {
+      const RoomID = this.inputData.join('');
+      const token = localStorage.getItem('token'); // 从 localStorage 获取 Token
+      if (!token) {
+        this.joinRoomError = '未授权访问，请先登录';
+        return;
+      }
+
+      try {
+        const response = await fetch('http://api2.andylive.cn/api/joinroom', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            RoomID: RoomID
+          })
+        });
+
+        if (response.status === 200) {
+          // 成功加入房间，处理成功逻辑，例如跳转到游戏页面
+          this.$router.push('/gameplay');
+        } else {
+          const errorData = await response.json();
+          this.joinRoomError = errorData.message || '加入房间失败';
+        }
+      } catch (error) {
+        this.joinRoomError = '网络错误或服务器不可达';
+        console.error('Error joining room', error);
+      }
     },
   },
 };
 </script>
+
 
   
   <style scoped>
