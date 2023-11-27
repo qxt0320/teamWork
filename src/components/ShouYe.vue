@@ -1,21 +1,24 @@
 <template>  
     <div class="container">  
-      <img src="../images/logo.png" alt="Logo" class="logo">  
+      <img src="../images/logo.png" alt="Logo" class="logo">
       <h1>抽乌龟</h1>  
       <label for="username">账号：</label>  
       <input type="text" placeholder="请输入账号"><br>  
       <label for="password">密码：</label>  
       <input type="password" placeholder="请输入密码"><br>  
       <router-link to="/zhuce">
-      <a href="zhuce.html">新用户注册</a><br>  
-     
-      
-    </router-link>
-    <button @click="login">登录</button>  
+      <a href="ZhuCe.vue">新用户注册</a><br>
+      </router-link>
+
+        <router-link to="/GameStart">
+          <a href="GameStart.vue">登录</a>
+        </router-link>
+<!--    <button @click="login">登录</button>  -->
+
     </div>  
   </template>  
     
-    <script lang="js">
+<script lang="js">
     export default {
   data() {
     return {
@@ -58,7 +61,7 @@
     }
   }
 };
-    </script>
+    </script> 
     
     <style scoped>  
 
@@ -67,9 +70,11 @@
       background-color: rgb(241, 252, 232);  
       
     
-   
+   position:fixed;
+      top:100px;
+
     height: 100vh;
-    padding: 50px;
+    padding: 20px;
         text-align: center;   
       
     }  
