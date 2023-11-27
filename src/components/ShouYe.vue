@@ -1,6 +1,6 @@
 <template>  
     <div class="container">  
-      <img src="../imgaes/logo.png" alt="Logo" class="logo">  
+      <img src="../images/logo.png" alt="Logo" class="logo">  
       <h1>抽乌龟</h1>  
       <label for="username">账号：</label>  
       <input type="text" placeholder="请输入账号"><br>  
