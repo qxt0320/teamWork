@@ -1,16 +1,25 @@
 import jwt
-from flask import Flask, request, jsonify, abort
-from flask_socketio import SocketIO  # 正确导入
-from database.db import get_user, add_user, create_room, join_room, generate_token, verify_token, room_exists, \
-    user_exists, out_room, start_game, get_room_data, update_ready_status
+from flask import Flask, request, jsonify
+from flask_socketio import SocketIO
 from functools import wraps
-from game.game_manager import GameManager  # 修改导入方式
+import datetime
+from db import *
+from game_manager import *
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 socketio = SocketIO(app)  # 创建 Flask-SocketIO 实例
 game_manager = GameManager(socketio)  # 创建 GameManager 实例
 
 SECRET_KEY = "0f574d86d10ae8778feffc0dc47810907e436a8fc14c2971"
+
+
+def generate_token(username):
+    expiration_time = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+    token = jwt.encode({'username': username, 'exp': expiration_time}, SECRET_KEY, algorithm='HS256')
+    print("使用以下串生成令牌：" + username)
+    return token.decode('utf-8') if isinstance(token, bytes) else token
 
 
 # Flask-SocketIO 事件处理器
@@ -212,5 +221,162 @@ def api_ready_game(username):
     return jsonify({"message": "Ready status updated successfully"}), 200
 
 
+@app.route('/api/adminregister', methods=['POST'])
+def admin_register():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({'error': '用户名和密码都是必须的'}), 400
+
+    if admin_user_exists(username):
+        return jsonify({'error': '用户名已存在'}), 409
+
+    # 这里应该添加密码散列步骤
+    hashed_password = password  # 示例中未散列密码，但在生产中应该这么做
+
+    add_admin_user(username, hashed_password)
+    return jsonify({'message': '管理员用户注册成功'}), 201
+
+
+@app.route('/api/adminlogin', methods=['POST'])
+def admin_login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({'error': '用户名和密码都是必须的'}), 400
+
+    if validate_admin_login(username, password):
+        # 登录成功，生成 token 或其他认证机制
+        token = generate_token(username)  # 假设您有一个生成 token 的函数
+        return jsonify({'message': '登录成功', 'token': token}), 200
+    else:
+        return jsonify({'error': '用户名不存在或密码错误'}), 401
+
+
+def admin_token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if 'Authorization' in request.headers:
+            auth_header = request.headers['Authorization']
+            token_parts = auth_header.split()
+            if token_parts[0].lower() == "bearer" and len(token_parts) == 2:
+                token = token_parts[1]
+            else:
+                return jsonify({"error": "Authorization header must start with 'Bearer'."}), 401
+
+        if not token:
+            return jsonify({"error": "Token is missing!"}), 401
+
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            username = payload.get('username')
+            # Check if the user is an admin
+            if not admin_user_exists(username):
+                return jsonify({"error": "Invalid token or user is not an admin."}), 401
+        except Exception as e:
+            return jsonify({"error": str(e)}), 401
+
+        kwargs['username'] = username
+        return f(*args, **kwargs)
+
+    return decorated
+
+
+@app.route('/api/userlist', methods=['GET'])
+@admin_token_required
+def get_user_list(username):
+    users = get_all_users()
+    user_list = []
+
+    for user in users:
+        user_data = {
+            'id': user['id'],
+            'username': user['username'],
+            'real_name': user['real_name'],
+            'score': user['score'],
+            'rank': user['rank']
+        }
+        user_list.append(user_data)
+
+    return jsonify(user_list)
+
+
+@app.route('/api/delplayer', methods=['POST'])
+@admin_token_required
+def delete_player(username):
+    data = request.get_json()
+    username = data.get('username')  # 使用正确的键名
+
+    if not username:
+        return jsonify({'error': '用户名是必须的'}), 400
+
+    if not user_exists(username):  # 确保 user_exists 函数也使用 username 参数
+        return jsonify({'error': '用户不存在'}), 404
+
+    if delete_user(username):
+        return jsonify({'message': '用户删除成功'}), 200
+    else:
+        return jsonify({'error': '删除用户失败'}), 500
+
+
+@app.route('/api/gamelist', methods=['GET'])
+@admin_token_required
+def get_game_list(username):
+    game_records = get_all_game_records()
+    game_list = []
+
+    for record in game_records:
+        game_data = {
+            'id': record['id'],
+            'player1_username': record['player1_username'],
+            'player2_username': record['player2_username'],
+            'player3_username': record['player3_username'],
+            'player4_username': record['player4_username'],
+            'winner_username': record['winner_username'],
+            'game_type': record['game_type'],
+            'game_date': record['game_date']
+        }
+        game_list.append(game_data)
+
+    return jsonify(game_list)
+
+
+@app.route('/api/addgame', methods=['POST'])
+@admin_token_required
+def add_game(username):
+    data = request.get_json()
+    player1 = data.get('player1')
+    player2 = data.get('player2')
+    player3 = data.get('player3')
+    player4 = data.get('player4')
+    winner = data.get('winner')
+    game_type = data.get('game_type')
+
+    add_game_record(player1, player2, player3, player4, winner, game_type)
+    return jsonify({'message': '对战记录添加成功'}), 201
+
+
+@app.route('/api/roomlist', methods=['GET'])
+@admin_token_required
+def get_room_list(username):
+    rooms = get_all_rooms()
+    room_list = []
+
+    for room in rooms:
+        room_data = {
+            'id': room['id'],
+            'creator_username': room['creator_username'],
+            'participants': room['participants'].split(',')  # 假设参与者是以逗号分隔的字符串
+        }
+        room_list.append(room_data)
+
+    return jsonify(room_list)
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=8080)

@@ -1,0 +1,7 @@
+Flask==2.0.1
+Flask-SocketIO==5.1.0
+python-socketio[client]==5.4.0
+python-jwt==3.3.0
+PyJWT==2.1.0
+sqlite3==3.36.0
+Flask-CORS==3.0.9
