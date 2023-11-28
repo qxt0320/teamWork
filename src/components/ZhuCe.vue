@@ -1,6 +1,7 @@
 <template>
   <div class="container">
     <img src="../images/zuche.png" alt="Logo" class="logo">
+
     <label for="name">昵称:</label>
     <input type="text" placeholder="请输入昵称" v-model="username"><br> <!-- 昵称输入绑定到 username -->
     <label for="phone">账号:</label>
@@ -11,8 +12,6 @@
     <p v-if="registerError">{{ registerError }}</p> <!-- 显示注册错误信息 -->
   </div>
 </template>
-
-
 
 <script lang="js">
 export default {
@@ -55,7 +54,6 @@ export default {
   }
 };
 </script>
-
 
   
 <style scoped>  

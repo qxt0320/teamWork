@@ -14,9 +14,9 @@
   </div>
 </template>
 
-
 <script lang="js">
-export default {
+    export default {
+
   data() {
     return {
       phonenumber: '',
@@ -55,7 +55,9 @@ export default {
     }
   }
 };
+
 </script>
+
 
     
     <style scoped>  

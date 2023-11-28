@@ -1,3 +1,4 @@
+
 <template>
   <div class="container">
     <img src="../images/yonghu.png" alt="Logo" class="logo">
@@ -12,7 +13,7 @@
       <p v-if="loginError" style="color: red;">{{ loginError }}</p> <!-- 显示登录错误信息 -->
     </div>
     <router-link to="/houtaizhuce">
-      <a href="zhuce.html">新用户注册</a><br>
+
     </router-link>
   </div>
 </template>

@@ -1,6 +1,8 @@
 <template>  
     <div class="container">  
+
         <img src="../images/yonghu.png" alt="Logo" class="logo">
+
     
       <div>  
         <i class="fa fa-user user-icon"></i>  
