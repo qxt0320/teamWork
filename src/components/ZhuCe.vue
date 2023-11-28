@@ -1,18 +1,18 @@
 <template>
   <div class="container">
     <img src="../images/zuche.png" alt="Logo" class="logo">
-    <label for="name"> 昵称: </label>
-    <input type="text" placeholder="请输入昵称" v-model="name"><br>
-    <label for="phone">账号: </label>
-    <input type="text" placeholder="请输入账号" v-model="phoneNumber"><br>
-    <label for="password">密码: </label>
-    <input type="password" placeholder="请输入密码" v-model="password"><br>  
-    <router-link to="/SucceedPage">
-    <button @click="register">注册</button>  
-  </router-link>
+
+    <label for="name">昵称:</label>
+    <input type="text" placeholder="请输入昵称" v-model="username"><br> <!-- 昵称输入绑定到 username -->
+    <label for="phone">账号:</label>
+    <input type="text" placeholder="请输入账号" v-model="phonenumber"><br> <!-- 账号输入绑定到 phonenumber -->
+    <label for="password">密码:</label>
+    <input type="password" placeholder="请输入密码" v-model="password"><br> <!-- 密码输入绑定到 password -->
+    <button @click="register">注册</button> <!-- 点击按钮触发 register 方法 -->
+    <p v-if="registerError">{{ registerError }}</p> <!-- 显示注册错误信息 -->
   </div>
-</template>  
-  
+</template>
+
 <script lang="js">
 export default {
   data() {
@@ -26,13 +26,13 @@ export default {
   methods: {
     async register() {
       try {
-        const response = await fetch('http://api2.andylive.cn/register', {
+        const response = await fetch('http://api2.andylive.cn/api/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            username: this.username,
+            yourname: this.username,
             phonenumber: this.phonenumber,
             password: this.password
           })
@@ -40,25 +40,21 @@ export default {
         if (response.status === 200) {
           const data = await response.json();
           console.log('Registration successful', data);
-          // 保存token、userId和username到本地存储或 Vuex 等状态管理器中
           localStorage.setItem('token', data.token);
-          localStorage.setItem('userId', data.userId);
-          localStorage.setItem('username', data.username);
-          // 其他成功逻辑处理
+          this.$router.push('/SucceedPage');
         } else {
-          this.registerError = '注册失败，请检查用户名、手机号和密码';
-          console.error('Registration failed', error);
-          // 其他失败逻辑处理
+          const errorData = await response.json();
+          this.registerError = errorData.message; // 显示具体的错误信息
         }
       } catch (error) {
-        this.registerError = '注册失败，请检查用户名、手机号和密码';
+        this.registerError = '网络错误或服务器不可达';
         console.error('Registration failed', error);
-        // 其他失败逻辑处理
       }
     }
   }
 };
 </script>
+
   
 <style scoped>  
 
