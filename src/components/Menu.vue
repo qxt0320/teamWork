@@ -8,10 +8,10 @@
         <img src="../images/Frame 3.png" alt="" class="frame3">
       </button></router-link>
     <!-- 人机对战 -->
-    <router-link to="/page1">
-      <button class="custom-button" @click="navigateToGuidePage(3)">
-        <img src="../images/Frame 4.png" alt="" class="frame4">
-      </button></router-link>
+<!--    <router-link to="/page1">-->
+<!--      <button class="custom-button" @click="navigateToGuidePage(3)">-->
+<!--        <img src="../images/Frame 4.png" alt="" class="frame4">-->
+<!--      </button></router-link>-->
     <!-- 新手指南 -->
     <router-link to="/guide">
       <button class="custom-button" @click="navigateToGuidePage(1)">

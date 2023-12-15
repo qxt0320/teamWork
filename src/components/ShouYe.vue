@@ -43,7 +43,7 @@
           localStorage.setItem('token', data.token);
           localStorage.setItem('userId', data.userId);
           localStorage.setItem('username', data.username);
-          this.$router.push('/GameStart');
+          this.$router.push('/Menu');
         } else {
           const errorData = await response.json();
           this.loginError = '登录失败: ' + errorData.error;
