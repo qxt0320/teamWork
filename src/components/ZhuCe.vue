@@ -1,35 +1,60 @@
-<template>  
-  <div class="container">  
-    <img src="../imgaes/zuche.png" alt="Logo" class="logo">  
-    <label for="name"> 昵称:</label>  
-    <input type="text" placeholder="请输入昵称" v-model="name"><br>  
-    <label for="phone">手机号: </label>  
-    <input type="text" placeholder="请输入手机号" v-model="phoneNumber"><br>  
-    <label for="password">密码:</label>  
-    <input type="password" placeholder="请输入密码" v-model="password"><br>  
-    <router-link to="/SucceedPage">
-    <button @click="register">注册</button>  
-  </router-link>
-  </div>  
-</template>  
-  
-<script>  
-export default {  
-  data() {  
-    return {  
-      phoneNumber: '',  
-      password: ''  
-    }  
-  },  
-  methods: {  
-    register() {  
-      // 在这里添加注册逻辑  
-      // 可以使用 this.phoneNumber 和 this.password 来获取输入的值  
-      // 例如，你可以将这些值发送到后端服务器，或者存储在本地存储中等等。  
-    }  
-  }  
-}  
-</script>  
+<template>
+  <div class="container">
+    <img src="../images/zuche.png" alt="Logo" class="logo">
+
+    <label for="name">昵称:</label>
+    <input type="text" placeholder="请输入昵称" v-model="username"><br> <!-- 昵称输入绑定到 username -->
+    <label for="phone">账号:</label>
+    <input type="text" placeholder="请输入账号" v-model="phonenumber"><br> <!-- 账号输入绑定到 phonenumber -->
+    <label for="password">密码:</label>
+    <input type="password" placeholder="请输入密码" v-model="password"><br> <!-- 密码输入绑定到 password -->
+    <button @click="register">注册</button> <!-- 点击按钮触发 register 方法 -->
+    <p v-if="registerError">{{ registerError }}</p> <!-- 显示注册错误信息 -->
+  </div>
+</template>
+
+<script lang="js">
+export default {
+  data() {
+    return {
+      username: '',
+      phonenumber: '',
+      password: '',
+      registerError: ''
+    };
+  },
+  methods: {
+    async register() {
+      try {
+        const response = await fetch('http://api2.andylive.cn/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            yourname: this.username,
+            phonenumber: this.phonenumber,
+            password: this.password
+          })
+        });
+        if (response.status === 200) {
+          const data = await response.json();
+          console.log('Registration successful', data);
+          localStorage.setItem('token', data.token);
+          this.$router.push('/SucceedPage');
+        } else {
+          const errorData = await response.json();
+          this.registerError = errorData.message; // 显示具体的错误信息
+        }
+      } catch (error) {
+        this.registerError = '网络错误或服务器不可达';
+        console.error('Registration failed', error);
+      }
+    }
+  }
+};
+</script>
+
   
 <style scoped>  
 
@@ -41,10 +66,16 @@ export default {
   background-color: rgb(241, 252, 232);
 
   height: 100vh;
-  padding: 250px 450px;
- 
+  padding: 250px 250px;
+  margin-left: -300px;
   
-}  
+}
+
+.component {
+  width: 200%; /* 增大组件的宽度为容器的两倍 */
+  height: 200%; /* 增大组件的高度为容器的两倍 */
+}
+
 input {  
 margin-bottom: 20px;  
 width: 200px;  
@@ -66,7 +97,8 @@ button {
   color: #fff;  
   border: none;  
   border-radius: 5px;  
-  cursor: pointer;  
+  cursor: pointer;
+  margin-left: 60px;
 }  
   
 button:hover {  

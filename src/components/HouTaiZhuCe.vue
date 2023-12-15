@@ -1,6 +1,8 @@
 <template>  
     <div class="container">  
-        <img src="../imgaes/yonghu.png" alt="Logo" class="logo">  
+
+        <img src="../images/yonghu.png" alt="Logo" class="logo">
+
     
       <div>  
         <i class="fa fa-user user-icon"></i>  
@@ -8,33 +10,59 @@
         <input type="text" v-model="username" placeholder="请输入账号"><br>  
         <i class="fa fa-lock password-icon"></i>  
         <label for="password" style="padding-left: 30px;">密码：</label>  
-        <input type="password" v-model="password" placeholder="请输入密码"><br>  
-        <router-link to="/zhucesucceed">
-        <button @click="login">注册</button>  
-    </router-link>
+        <input type="password" v-model="password" placeholder="请输入密码"><br>
+        <button @click="register">注册</button> <!-- 更新为调用register方法 -->
+        <p v-if="registerError" style="color: red;">{{ registerError }}</p>
       </div>  
     </div>  
-  </template>  
-    
-  <script>  
-  export default {  
-    data() {  
-      return {  
-        username: '',  
-        password: '',  
-        userImage: 'yonghu.png',  
-        userImageAlt: '描述图片的文字',  
-        registerURL: 'houtai1.html'  
-      }  
-    },  
-    methods: {  
-      login() {  
-        // 在这里添加登录逻辑。可以使用 this.username 和 this.password 来获取输入的值。例如，你可以将这些值发送到后端服务器，或者存储在本地存储中等等。  
-      }  
-    }  
-  }  
-  </script>
-  <style>
+  </template>
+
+<script lang="js">
+export default {
+  data() {
+    return {
+      username: '1', // 如果你的API不需要这个字段，这行可以删除
+      phonenumber: '',
+      password: '',
+      registerError: ''
+    };
+  },
+  methods: {
+    async register() {
+      try {
+        const response = await fetch('http://api2.andylive.cn/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            phonenumber: this.phonenumber,
+            password: this.password,
+            yourname: this.username // 如果API不需要这个字段，这行可以注释或删除
+          })
+        });
+        if (response.status === 200) {
+          const data = await response.json();
+          console.log('Registration successful', data);
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('userId', data.userId);
+          // 这里的data.username应根据实际返回的数据结构进行调整
+          localStorage.setItem('username', data.username || this.phonenumber);
+          this.$router.push('/zhucesucceed'); // 假设您有一个注册成功的路由
+        } else {
+          const errorData = await response.json();
+          this.registerError = errorData.error || '注册失败，请检查信息是否正确';
+        }
+      } catch (error) {
+        this.registerError = '注册请求失败，请检查网络连接';
+        console.error('Registration failed', error);
+      }
+    }
+  }
+};
+</script>
+
+<style>
 
   .my-image {
     width: 80px;
