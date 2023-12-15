@@ -6,6 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="dbcbf20f-bdb0-4488-b57a-232955c6075c" name="Changes" comment="Changes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Menu.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Menu.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ShouYe.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ShouYe.vue" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,14 +47,14 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "E:/teamWork-main",
+    "last_opened_file_path": "D:/Github/teamWork",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "vcs.Git",
-    "ts.external.directory.path": "E:\\teamWork\\node_modules\\typescript\\lib",
+    "ts.external.directory.path": "D:\\Github\\teamWork\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -73,6 +75,7 @@
       <workItem from="1700015527459" duration="366000" />
       <workItem from="1701072310455" duration="158000" />
       <workItem from="1701083227217" duration="1979000" />
+      <workItem from="1702625670128" duration="345000" />
     </task>
     <servers />
   </component>
