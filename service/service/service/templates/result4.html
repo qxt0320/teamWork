@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>player4</title>
+    <link rel="stylesheet" href="../static/css/element.css">
+    <script src="../static/js/vue.js"></script>
+    <script src="../static/js/element.js"></script>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+
+    <div id="app">
+        <div class="rank">
+            <h2 class="el-icon-caret-top">排行榜</h2>
+            <table>
+                <tr v-for="(player, index) in players" :key="player.name">
+                    <td :class="index === 0 ? 'el-icon-medal-1' : 'el-icon-medal'" v-text="player.name + '：'"></td>
+                    <td v-text="player.score"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            player1Name: '',
+            player1Score: 0,
+            player2Name: '',
+            player2Score: 0,
+            player3Name: '',
+            player3Score: 0,
+            player4Name: '',
+            player4Score: 0
+        },
+        created: function() {
+        let params = new URLSearchParams(window.location.search);
+        this.players = [
+            { name: params.get('player1Name') || '未知', score: parseInt(params.get('player1Score')) || 0 },
+            { name: params.get('player2Name') || '未知', score: parseInt(params.get('player2Score')) || 0 },
+            { name: params.get('player3Name') || '未知', score: parseInt(params.get('player3Score')) || 0 },
+            { name: params.get('player4Name') || '未知', score: parseInt(params.get('player4Score')) || 0 }
+        ];
+        this.players.sort((a, b) => b.score - a.score); // 按分数从高到低排序
+    }
+})
+        const socket = io(); // 确保与后端正确连接
+
+socket.on('game_over', function(data) {
+    window.location.href = `/result4?player1Name=${encodeURIComponent(data.player1Name)}&player1Score=${data.player1Score}&player2Name=${encodeURIComponent(data.player2Name)}&player2Score=${data.player2Score}&player3Name=${encodeURIComponent(data.player3Name)}&player3Score=${data.player3Score}&player4Name=${encodeURIComponent(data.player4Name)}&player4Score=${data.player4Score}`;
+});
+
+   
+</script>
+</body>
+<style>
+    #app {
+        background-image: url('../static/images/result4.png');
+        background-size: 100% 100%;
+        background-position: center;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        color: black;
+        align-items: center;
+    }
+
+    .player-name {
+        border: 1.5px solid #000; /* 设置1像素宽的黑色实线边框 */
+        padding: 5px; /* 设置内边距以增加内容与边框之间的间距 */
+        background-color: white;
+    }
+
+    .player1 {
+        position: absolute;
+        top: 13.5%;
+        left:21%;
+    }
+
+    .player2 {
+        position: absolute;
+        top: 14%;
+        right: 17%;
+    }
+
+    .player3{
+        position: absolute;
+        top: 4%;
+        right:37%;
+    }
+
+    .myself {
+        position: absolute;
+        bottom: 32%;
+        left: 21%;
+    }
+
+    .rank {
+        margin-top:10px;
+        font-size:25px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        background-color: rgba(255, 255, 255, 0);
+    }
+
+    table {
+        border-collapse: collapse;
+        font-size: 25px;
+    }
+
+    td,th {
+        padding: 5px;
+        margin-right:50px;
+        border:none;
+    }
+
+</style>
+</html>

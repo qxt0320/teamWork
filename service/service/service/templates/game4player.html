@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>player4</title>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+  <style>
+    #app {
+      background-image: url('../static/images/bg44.jpg');
+      background-size: cover;
+      background-position: center;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      color:black;
+      align-items: center;
+    }
+    .card {
+      width: 130px;
+      height: 175px;
+      position: absolute;
+      margin: 20px;
+      border-radius: 5px;
+    }
+    .player-card, .hidden {
+      position: absolute;
+      background-size: cover;
+      width: 130px;
+      height: 175px;
+      border: 1px solid #000;
+      text-align: center;
+      line-height: 150px;
+      font-size: 20px;
+    }
+    .hidden {
+      background-image: url('../static/images/back.gif'); /* 对手的牌使用背景图片back.gif */
+      color: transparent;
+    }
+    .player-card {
+      /*background-image: url('../static/images/4.png');*/
+      z-index: 99;
+      position: absolute;
+      top: 530px;
+      right: 240px; /* 将 right 的值修改为较小的数值 */
+    }
+
+
+    .opponent1-cards {
+      position: absolute;
+      top: 220px;
+      left: 200px;
+      cursor:pointer;
+    }
+    .opponent2-cards {
+      position: absolute;
+      top: 140px;
+      right:200px;
+      cursor:pointer;
+    }
+    .opponent3-cards{
+      position: absolute;
+      top: 220px;
+      right:160px;
+      cursor: pointer;
+    }
+
+    .out-cards{
+      position: absolute;
+      top: 300px;
+      right: 240px;
+    }
+
+    .card-animation-enter-active, .card-animation-leave-active {
+      transition: all 0.5s;
+    }
+    .card-animation-enter, .card-animation-leave-to {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    .card-animation-move {
+      transition: transform 0.5s;
+    }
+    .opponent-cards > div {
+      transition-delay: 0.1s;
+    }
+    .player-cards > img {
+      transition-delay: 0.1s;
+    }
+
+    .selected {
+      transform: translateY(-20px);
+    }
+
+    .player-name {
+      border: 1.5px solid #000; /* 设置1像素宽的黑色实线边框 */
+      padding: 5px; /* 设置内边距以增加内容与边框之间的间距 */
+      background-color: white;
+    }
+
+    .player1 {
+      position: absolute;
+      top: 105px;
+      left:295px;
+    }
+
+    .player3 {
+      position: absolute;
+      top: 110px;
+      right: 255px;
+    }
+
+    .player2{
+      position: absolute;
+      top: 30px;
+      right:550px;
+    }
+
+    .player4{
+      position: absolute;
+      bottom: 245px;
+      left: 285px;
+    }
+
+     .footer {
+       position: fixed;
+       bottom: 20px; /* 距离底部的距离 */
+       left: 20%; /* 水平居中 */
+       transform: translateX(-50%); /* 水平居中 */
+     }
+     .active-player {
+      border-color: red;
+  }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <span :class="{ 'active-player': activePlayerClass['active-player'] && displayNames[1] === playerNames[currentPlayerTurn] }" class="player-name player1" v-text="displayNames[1]"></span>
+  <span :class="{ 'active-player': activePlayerClass['active-player'] && displayNames[2] === playerNames[currentPlayerTurn] }" class="player-name player2" v-text="displayNames[2]"></span>
+  <span :class="{ 'active-player': activePlayerClass['active-player'] && displayNames[3] === playerNames[currentPlayerTurn] }" class="player-name player3" v-text="displayNames[3]"></span>
+  <span :class="{ 'active-player': activePlayerClass['active-player'] && displayNames[0] === playerNames[currentPlayerTurn] }" class="player-name player4" v-text="displayNames[0]"></span>
+  <div class="opponent1-cards">
+    <transition-group name="card-animation" tag="div" class="opponent-cards">
+      <div v-for="(card, index) in opponent1Cards" :key="'opponent1-' + index"
+           class="card hidden opponent-card" :style="{ left: index * 30 + 'px' }"
+           @click="drawOpponentCard(1, index)">
+
+      </div>
+    </transition-group>
+  </div>
+
+  <div class="opponent3-cards">
+    <transition-group name="card-animation" tag="div" class="opponent-cards">
+      <div v-for="(card, index) in opponent3Cards" :key="'opponent3-' + index"
+           class="card hidden opponent-card" :style="{ right: index * 30 + 'px' }"
+           @click="drawOpponentCard(3, index)">
+      </div>
+    </transition-group>
+  </div>
+
+  <div class="opponent2-cards">
+    <transition-group name="card-animation" tag="div" class="opponent-cards">
+      <div v-for="(card, index) in opponent2Cards" :key="'opponent2-' + index"
+           class="card hidden opponent-card" :style="{ right: 400 + index * 30 + 'px' }"
+           @click="drawOpponentCard(2, index)">
+      </div>
+    </transition-group>
+  </div>
+
+  <div>
+    <transition-group name="card-animation" tag="div" class="player-cards">
+      <!-- 修改部分：为每张牌添加点击事件处理 -->
+      <img v-for="(card, index) in playerCards" :key="index"
+           :src="getCardImage(card)" class="card player-card"
+           :style="{ left:550 + index * 35 + 'px' }"
+           @click="toggleCardPosition(index)"
+           :class="{ selected: selectedCardIndex === index }" />
+    </transition-group>
+
+  </div>
+
+  <div class="out-cards">
+    <transition-group name="card-animation" tag="div" class="player-cards">
+      <img v-for="(card, index) in outCards" :key="index"
+           :src="getCardImage(card)" class="card player-card"
+           :style="{ top: '20px', left: -600 + index * 10 + 'px' }" />
+    </transition-group>
+  </div>
+
+  <div class="footer">
+    <button @click="handlePlayCard"  v-text="playButtonLabel"></button>
+    <button @click="playPairsAutomatically">对子</button>
+  </div>
+</div>
+
+<script>
+  new Vue({
+    el: '#app',
+    data: {
+      playButtonLabel: '出牌',
+      selectedOpponentCard: null, // 选中的对手牌
+      selectedPlayerCard: null,   // 选中的玩家牌
+      playerCards: [],
+      opponent1Cards: [],
+      opponent2Cards: [],
+      outCards:[],
+      showOpponentCards: false,
+      swapWithOpponent: null,
+      currentPlayerTurn: 1, // 假设游戏开始时是玩家3的回合
+      currentRound: 0,
+      isSwitching : false,
+      cardTakenBy: null, // 存储谁抽走了您的牌
+      pairsPlayed: [], // 存储打出去的对子
+      cardImages: { // 存储扑克牌图片路径
+        '黑桃A': '../static/images/spadesA.png', '黑桃2': '../static/images/spades2.png', '黑桃3': '../static/images/spades3.png',
+        '黑桃4': '../static/images/spades4.png', '黑桃5': '../static/images/spades5.png', '黑桃6': '../static/images/spades6.png',
+        '黑桃7': '../static/images/spades7.png', '黑桃8': '../static/images/spades8.png', '黑桃9': '../static/images/spades9.png',
+        '黑桃10': '../static/images/spades10.png', '黑桃J': '../static/images/spadesJ.png', '黑桃Q': '../static/images/spadesQ.png',
+        '黑桃K': '../static/images/spadesK.png',
+        '红桃A': '../static/images/heartA.png', '红桃2': '../static/images/heart2.png', '红桃3': '../static/images/heart3.png',
+        '红桃4': '../static/images/heart4.png', '红桃5': '../static/images/heart5.png', '红桃6': '../static/images/heart6.png',
+        '红桃7': '../static/images/heart7.png', '红桃8': '../static/images/heart8.png', '红桃9': '../static/images/heart9.png',
+        '红桃10': '../static/images/heart10.png', '红桃J': '../static/images/heartJ.png', '红桃Q': '../static/images/heartQ.png',
+        '红桃K': '../static/images/heartK.png',
+        '方块A': '../static/images/diamondA.png', '方块2': '../static/images/diamond2.png', '方块3': '../static/images/diamond3.png',
+        '方块4': '../static/images/diamond4.png', '方块5': '../static/images/diamond5.png', '方块6': '../static/images/diamond6.png',
+        '方块7': '../static/images/diamond7.png', '方块8': '../static/images/diamond8.png', '方块9': '../static/images/diamond9.png',
+        '方块10': '../static/images/diamond10.png', '方块J': '../static/images/diamondJ.png', '方块Q': '../static/images/diamondQ.png',
+        '方块K': '../static/images/diamondK.png',
+        '梅花A': '../static/images/clubA.png', '梅花2': '../static/images/club2.png', '梅花3': '../static/images/club3.png',
+        '梅花4': '../static/images/club4.png', '梅花5': '../static/images/club5.png', '梅花6': '../static/images/club6.png',
+        '梅花7': '../static/images/club7.png', '梅花8': '../static/images/club8.png', '梅花9': '../static/images/club9.png',
+        '梅花10': '../static/images/club10.png', '梅花J': '../static/images/clubJ.png', '梅花Q': '../static/images/clubQ.png',
+        '梅花K': '../static/images/clubK.png','switch': '../static/images/turn.png','swap': '../static/images/swap.png','turtle': '../static/images/turtle.png',
+
+      },
+      selectedCardIndex: -1,  // 记录被选中的牌的索引
+      selectedOpponentCardIndex: -1 ,// 记录被选中的对手玩家牌的索引
+      socket: null,// Socket.IO 客户端实例
+      myPlayerId: null, // 存储分配的玩家 ID
+      isClockwise: false, // 默认为逆时针抽牌
+      switchPlayed: false, // 跟踪switch牌是否被打出
+      currentPlayerTurn: null,
+      hasDrawnCard: false,
+      playerNames: {
+        1: 'abc',
+        2: 'abcd',
+        3: 'abce',
+        4:'abcde'
+      },
+      room_id: '1111',
+    },
+    computed: {
+      // 修改以确保每个玩家的视角下名字顺序正确
+      displayNames() {
+        let names = [];
+        switch(this.myPlayerId) {
+          case 1:
+            names = [this.playerNames[1], this.playerNames[2], this.playerNames[3], this.playerNames[4]];
+            break;
+          case 2:
+            names = [this.playerNames[2], this.playerNames[3],  this.playerNames[4],this.playerNames[1]];
+            break;
+          case 3:
+            names = [this.playerNames[3], this.playerNames[4],this.playerNames[1], this.playerNames[2]];
+            break;
+          case 4:
+            names = [this.playerNames[4], this.playerNames[1],this.playerNames[2], this.playerNames[3]];
+            break;
+          default:
+            names = ['Unknown', 'Unknown', 'Unknown','Unknown'];
+        }
+        return names;
+      },
+      // 修改以根据当前玩家的回合动态设置类名
+      activePlayerClass() {
+        let classes = {};
+        if (this.currentPlayerTurn === 1) {
+          classes['active-player'] = this.myPlayerId === 1;
+        } else if (this.currentPlayerTurn === 2) {
+          classes['active-player'] = this.myPlayerId === 2;
+        } else if (this.currentPlayerTurn === 3) {
+          classes['active-player'] = this.myPlayerId === 3;
+        }else if (this.currentPlayerTurn === 4) {
+          classes['active-player'] = this.myPlayerId === 4;
+        }
+        return classes;
+      }
+  },
+    created: function() {
+      /*// 在 Vue 实例创建时建立连接
+      this.socket = io('http://game.andylive.cn/');
+      // 监听事件
+      this.initializeSocketListeners();
+      this.socket.on('player_id_assigned4', (data) => {
+      this.myPlayerId = data.player_id;
+      console.log("My player ID is", this.myPlayerId);
+    });
+    this.socket.emit('request_current_turn4');
+    this.socket.on('room_participant_info4', (data) => {
+      this.room_id = data.room_id;
+      this.playerNames = data.playerNames;  // 直接使用从后端接收的数据
+    });*/
+    this.socket = io('http://'+document.domain+':'+location.port);
+    //this.socket = io('http://game.andylive.cn/');
+      this.socket.on('connect', () => {
+        console.log("Connected to the server");
+        this.initializeSocketListeners();
+        this.socket.on('player_id_assigned', (data) => {
+        this.myPlayerId = data.player_id;
+        console.log("My player ID is", this.myPlayerId);
+      });
+      this.socket.emit('request_current_turn');
+      this.socket.on('room_participant_info', (data) => {
+        this.room_id = data.room_id;
+        this.playerNames = data.playerNames;  // 直接使用从后端接收的数据
+      });
+      });
+    },
+    methods: {
+      initializeSocketListeners: function() {
+        console.log("Setting up socket event listeners");
+        this.socket.on('cards_dealt4', (data) => {
+            if (data.player_id === this.myPlayerId) {
+                // 当前玩家收到自己的牌组
+                console.log('Received my cards:', data.playerCards);
+                this.playerCards = data.playerCards;
+                this.opponent1Cards = data.opponent1Cards;
+                this.opponent2Cards = data.opponent2Cards;
+                this.opponent3Cards = data.opponent3Cards;
+                this.showOpponentCards = true;
+            }
+        });
+        this.socket.on('cards_updated4', (data) => {
+        if (data.player_id === this.myPlayerId) {
+            this.playerCards = data.playerCards;
+        }
+        this.opponent1Cards = data.opponent1Cards;
+        this.opponent2Cards = data.opponent2Cards;
+        this.opponent3Cards = data.opponent3Cards;
+        this.outCards = data.outCards;  // 更新本地的弃牌堆
+        this.$forceUpdate();        
+      });
+      this.socket.on('switch_status_changed4', (data) => {
+            this.isClockwise = data.isSwitchActive;
+      });
+      this.socket.on('update_turn4', (data) => {
+            this.currentPlayerTurn = data.currentPlayerTurn;            
+            // 仅在轮到当前玩家时重置抽牌状态
+          if (this.currentPlayerTurn === this.myPlayerId) {
+            this.hasDrawnCard = false;
+          }
+            this.$forceUpdate();  // 强制组件重新渲染
+        });
+      this.socket.on('not_your_turn4', (data) => {
+          alert(data.message);
+      });
+      this.socket.on('set_player_name4', this.setPlayerName);
+      this.socket.on('update_game_state4', (data) => {
+        this.currentPlayerTurn = data.currentPlayerTurn;
+    });
+    this.socket.on('game_over4', (data) => {
+        this.handleGameOver(data);
+    });
+    },
+    setPlayerName(data) {
+      Vue.set(this.playerNames, data.playerId, data.playerName);
+    },
+      dealCards: function() {
+        this.socket.emit('deal_cards4', {room_id: this.room_id});
+    },
+    
+    handleGameOver: function(data) {
+        console.log("玩家积分：", data.playerScores);
+        let queryParams = new URLSearchParams();
+        for (let playerId in this.playerNames) {
+            queryParams.append(`player${playerId}Name`, this.playerNames[playerId]);
+            queryParams.append(`player${playerId}Score`, data.playerScores[playerId]);
+            console.log(`player${playerId}Name:`, this.playerNames[playerId]);
+            console.log(`player${playerId}Score:`, data.playerScores[playerId]);
+        }
+        window.location.href = `result4?${queryParams.toString()}`;
+    },
+
+      handlePlayCard: function(){
+        if (this.playButtonLabel === '出牌') {
+          this.playButtonLabel = '确认出牌';  // 点击按钮后将按钮文字改为“确认出牌”
+        } else if (this.playButtonLabel === '确认出牌') {
+          if (this.selectedCardIndex !== -1) {
+            const selectedCard = this.playerCards[this.selectedCardIndex];
+            if (selectedCard === 'switch' || selectedCard === 'swap') {
+              // 如果选择的牌是“turn”或者“swap”，则移动到指定位置
+              // 这里假设存在 playCard 方法用于处理出牌逻辑
+              this.playCard(selectedCard,this.selectedCardIndex);
+            } else {
+              alert('此牌不是功能牌');  // 给出提示
+            }
+          }
+          this.playButtonLabel = '出牌';  // 恢复按钮文字为“出牌”
+        }
+      },
+      playCard: function(card, index) {
+        this.playerCards.splice(index, 1);
+        this.outCards.push(card);
+        if (card === 'swap') {
+          this.initiateSwap(); // 初始化交换流程
+        }
+        if (card === 'switch') {
+          this.socket.emit('play_switch_card4', {
+            player_id: this.myPlayerId,
+            card_index: index
+        });
+    }
+        this.$forceUpdate();
+    },
+    initiateSwap: function() {
+        this.isSwapping = true; // 增加一个新的数据属性 isSwapping 来跟踪是否处于交换状态
+        this.selectedSwapCard = null; // 选择用于交换的玩家牌
+        this.selectedOpponentSwapCard = null; // 选择用于交换的对手牌
+        this.swapWithOpponent = null; // 新增变量来标记交换的对手
+      },
+      performSwap: function() {
+        if(this.swapWithOpponent === null || this.selectedSwapCard === null || this.selectedOpponentSwapCard === null) {
+            return; // 如果任何必要的选择未完成，则直接返回
+        }
+        let opponentCards;
+          switch(this.swapWithOpponent) {
+              case 1:
+                  opponentCards = this.opponent1Cards;
+                  break;
+              case 2:
+                  opponentCards = this.opponent2Cards;
+                  break;
+              case 3:
+                  opponentCards = this.opponent3Cards;
+                  break;
+              default:
+                  // 可以处理默认情况或显示错误
+                  break;
+          }
+        console.log(this.swapWithOpponent)
+        let playerCard = this.playerCards[this.selectedSwapCard];
+        let opponentCard = opponentCards[this.selectedOpponentSwapCard];
+        swappedCards=[playerCard,opponentCard];
+        // 交换牌
+        Vue.set(this.playerCards, this.selectedSwapCard, opponentCard);
+        Vue.set(opponentCards, this.selectedOpponentSwapCard, playerCard);
+        // 使用 Socket.IO 发送交换牌请求
+        // 移除交换牌并添加到废牌堆
+        let swapIndex = this.playerCards.indexOf('swap');
+        if (swapIndex !== -1) {
+            this.playerCards.splice(swapIndex, 1);
+            this.outCards.push('swap');
+        }
+        this.socket.emit('swap_cards4', {
+        player_id: this.myPlayerId,
+        target_player_id: this.swapWithOpponent,
+        swapped_cards: swappedCards,
+        playerCard:this.playerCards,
+        opponentCard:opponentCards,
+        outCards: this.outCards, // 发送更新后的废牌堆
+        room_id: this.room_id
+      });
+      // 重置交换状态
+      this.isSwapping = false;
+        this.selectedSwapCard = null;
+        this.selectedOpponentSwapCard = null;
+        this.$forceUpdate();
+        /*this.updateBackendData();*/
+    },
+    updateBackendData: function() {
+      console.log(this.swapWithOpponent);
+      let swapOpponentAdjustedIndex = (this.swapWithOpponent && this.swapWithOpponent > 0) ? this.swapWithOpponent : null;
+      console.log("Updating backend with swapOpponentAdjustedIndex:", swapOpponentAdjustedIndex);
+      fetch('/api/swap_cards4', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          playerCards: this.playerCards,
+          opponent1Cards: this.opponent1Cards,
+          opponent2Cards: this.opponent2Cards,
+          opponent3Cards: this.opponent3Cards,
+          swapOpponentIndex: swapOpponentAdjustedIndex, // 传递被交换对手的索引
+          // 其他可能需要的数据
+        }),
+      }).then(response => response.json())
+        .then(data => console.log("Backend updated"))
+        .catch(error => console.error('Error updating backend:', error));
+        this.swapWithOpponent = null;
+    },
+
+      getCardImage: function(card) {
+        return this.cardImages[card]; // 根据输入的牌面获取对应的图片路径
+      },
+
+      toggleCardPosition: function(index) {
+        if (this.isSwapping) {
+          this.selectedCardIndex = index; // 在交换模式下选择自己的牌  selectedSwapCard
+          this.selectedSwapCard=this.selectedCardIndex;
+          console.log(this.selectedSwapCard);
+          this.checkSwapCompletion(); // 检查是否可以进行交换
+        } else {
+            // 非 swap 模式下的常规选择
+            this.selectedCardIndex = this.selectedCardIndex === index ? -1 : index;
+        }
+    },
+
+    selectOpponentForSwap: function(opponentIndex) {
+      this.swapWithOpponent = opponentIndex;
+      this.selectedOpponentSwapCard = null; // 重置对手的选择
+    },
+
+    toggleOpponent2CardPosition: function(cardIndex) {
+        if (this.isSwapping) {
+          this.selectedOpponentSwapCard = cardIndex;
+          this.swapWithOpponent = 2; // 标记与对手2进行交换
+          this.checkSwapCompletion();
+      }
+      else{
+        if (this.selectedOpponent2CardIndex === cardIndex) {
+          this.selectedOpponent2CardIndex = -1; // 取消选中状态
+        } else {
+          this.selectedOpponent2CardIndex = cardIndex; // 设置为选中状态
+          this.selectedOpponent1CardIndex = -1; // 清除玩家1的牌的选中状态
+          this.selectedOpponent3CardIndex = -1; // 清除玩家1的牌的选中状态
+          this.selectedCardIndex = -1; // 清除玩家牌的选中状态
+          this.$forceUpdate(); // 强制更新组件
+        }
+        if (this.isSwapping && this.swapWithOpponent === opponentIndex) {
+          this.selectedOpponentSwapCard = cardIndex;
+          this.checkSwapCompletion();
+        }
+      }
+      },
+
+      toggleOpponent1CardPosition: function(cardIndex) {
+        if (this.isSwapping) {
+          this.selectedOpponentSwapCard = cardIndex;
+          this.swapWithOpponent = 1; // 标记与对手1进行交换
+          this.checkSwapCompletion(); // 检查是否可以进行交换
+      }
+      else{
+        if (this.selectedOpponent1CardIndex === cardIndex) {
+          this.selectedOpponent1CardIndex = -1; // 取消选中状态
+        } else {
+          this.selectedOpponent1CardIndex = cardIndex; // 设置为选中状态
+          this.selectedOpponent2CardIndex = -1; // 清除玩家2的牌的选中状态
+          this.selectedOpponent3CardIndex = -1;
+          this.selectedCardIndex = -1; // 清除玩家牌的选中状态
+          this.$forceUpdate(); // 强制更新组件
+        }
+        if (this.isSwapping && this.swapWithOpponent === opponentIndex) {
+            this.selectedOpponentSwapCard = cardIndex;
+            this.checkSwapCompletion();
+        }
+      }
+      },
+
+      toggleOpponent3CardPosition: function(cardIndex) {
+        if (this.isSwapping) {
+          this.selectedOpponentSwapCard = cardIndex;
+          this.swapWithOpponent = 3; // 标记与对手1进行交换
+          this.checkSwapCompletion(); // 检查是否可以进行交换
+      }
+      else{
+        if (this.selectedOpponent1CardIndex === cardIndex) {
+          this.selectedOpponent3CardIndex = -1; // 取消选中状态
+        } else {
+          this.selectedOpponent3CardIndex = cardIndex; // 设置为选中状态
+          this.selectedOpponent2CardIndex = -1; // 清除玩家2的牌的选中状态
+          this.selectedOpponent1CardIndex = -1;
+          this.selectedCardIndex = -1; // 清除玩家牌的选中状态
+          this.$forceUpdate(); // 强制更新组件
+        }
+        if (this.isSwapping && this.swapWithOpponent === opponentIndex) {
+            this.selectedOpponentSwapCard = cardIndex;
+            this.checkSwapCompletion();
+        }
+      }
+      },
+
+      checkSwapCompletion: function() {
+        if (this.selectedSwapCard !== null && this.selectedOpponentSwapCard !== null && this.swapWithOpponent !== null) {
+            this.performSwap();
+        }
+      },
+
+      restoreOpponentCardPosition: function() {
+        this.selectedOpponent1CardIndex = -1; // 恢复玩家1的牌的位置
+        this.selectedOpponent2CardIndex = -1; // 恢复玩家2的牌的位置
+        this.selectedOpponent3CardIndex = -1; // 恢复玩家3的牌的位置
+      },
+
+      drawOpponentCard: function(opponentIndex, cardIndex) {
+        if (this.myPlayerId !== this.currentPlayerTurn) {
+            alert('当前不是您的回合');
+            return;
+        }
+        this.hasDrawnCard = true; // 玩家抽牌后设置为 true
+      console.log("抽牌:"+this.hasDrawnCard);
+        if (this.isSwapping) {
+          // 如果是交换模式，选择对手的牌并检查是否可以完成交换
+            this.selectedOpponentSwapCard = cardIndex;
+            this.swapWithOpponent = opponentIndex;
+            this.checkSwapCompletion();
+        }
+        else {
+          if ((this.isClockwise && opponentIndex === 1 && this.getOpponentCardCount(1)!=0) || (!this.isClockwise && opponentIndex === 1 && this.getOpponentCardCount(3)==0&&this.getOpponentCardCount(2)==0) || (!this.isClockwise && opponentIndex === 2 && this.getOpponentCardCount(2)!=0&&this.getOpponentCardCount(3)==0)|| (this.isClockwise && opponentIndex === 2 && this.getOpponentCardCount(1)==0&&this.getOpponentCardCount(2)!=0)|| (!this.isClockwise && opponentIndex === 3 && this.getOpponentCardCount(3)!=0)|| (this.isClockwise && opponentIndex === 3 && this.getOpponentCardCount(1)==0&&this.getOpponentCardCount(2)==0&&this.getOpponentCardCount(3)!=0)) {
+                console.log("Drawing card index:", cardIndex, "from opponent", opponentIndex);
+                let opponentId = this.getOpponentId(opponentIndex);
+                console.log("Opponent ID:", opponentId);
+                // 使用 Socket.IO 发送抽牌请求
+                this.socket.emit('draw_card4', {
+                    player_id: this.myPlayerId,
+                    opponent_id: opponentId,
+                    card_index: cardIndex
+                });
+            } 
+          else {
+                // 显示适当的警告消息
+                alert(this.isClockwise ? "现在为顺时针抽牌" : "现在为逆时针抽牌");
+            }
+        }
+  },
+      getOpponentId: function(opponentIndex) {
+          let myId = this.myPlayerId; // 当前玩家的 ID
+          let opponentId;
+          let opponentCardCount;
+          console.log(this.isClockwise)
+          if(!this.isClockwise){
+            if (myId === 1) {
+              if(this.getOpponentCardCount(3)!=0)
+                opponentId =4;
+              else if(this.getOpponentCardCount(2)!=0)
+                opponentId =3;
+              else if(this.getOpponentCardCount(1)!=0)
+                opponentId =2;
+            } else if (myId === 2) {
+              if(this.getOpponentCardCount(3)!=0)
+                opponentId =1;
+              else if(this.getOpponentCardCount(2)!=0)
+                opponentId =4;
+              else if(this.getOpponentCardCount(1)!=0)
+                opponentId =3;
+            } else if(myId === 3){ // myId === 3
+              if(this.getOpponentCardCount(3)!=0)
+                opponentId =2;
+              else if(this.getOpponentCardCount(2)!=0)
+                opponentId =1;
+              else if(this.getOpponentCardCount(1)!=0)
+                opponentId =4;
+            }else if(myId === 4){ // myId === 3
+              if(this.getOpponentCardCount(3)!=0)
+                opponentId =3;
+              else if(this.getOpponentCardCount(2)!=0)
+                opponentId =2;
+              else if(this.getOpponentCardCount(1)!=0)
+                opponentId =1;
+            }
+        }
+        else if(this.isClockwise){
+          if (myId === 1) {
+              if(this.getOpponentCardCount(1)!=0)
+                opponentId =2;
+              else if(this.getOpponentCardCount(2)!=0)
+                opponentId =3;
+              else if(this.getOpponentCardCount(3)!=0)
+                opponentId =4;
+            } else if (myId === 2) {
+              if(this.getOpponentCardCount(1)!=0)
+                opponentId =3;
+              else if(this.getOpponentCardCount(2)!=0)
+                opponentId =4;
+              else if(this.getOpponentCardCount(3)!=0)
+                opponentId =1;
+            } else if(myId === 3){ // myId === 3
+              if(this.getOpponentCardCount(1)!=0)
+                opponentId =4;
+              else if(this.getOpponentCardCount(2)!=0)
+                opponentId =1;
+              else if(this.getOpponentCardCount(3)!=0)
+                opponentId =2;
+            }else if(myId === 4){ // myId === 3
+              if(this.getOpponentCardCount(1)!=0)
+                opponentId =1;
+              else if(this.getOpponentCardCount(2)!=0)
+                opponentId =2;
+              else if(this.getOpponentCardCount(3)!=0)
+                opponentId =3;
+            }
+        }
+          return opponentId;
+      },
+      getOpponentCardCount: function(opponentId) {
+          if (opponentId === 1) {
+              return this.opponent1Cards.length;
+          } else if (opponentId === 2) {
+              return this.opponent2Cards.length;
+          }else if(opponentId === 3){
+            return this.opponent3Cards.length;
+          }
+      },
+
+      playPairsAutomatically: function() {
+        let pairs = this.findPairs(this.playerCards);
+        pairs.forEach(pair => {
+            pair.forEach(card => {
+                let index = this.playerCards.indexOf(card);
+                if (index > -1) {
+                    this.playerCards.splice(index, 1); // 移除打出的牌
+                    // 假设有一个数组用于存储打出的牌
+                    this.outCards.push(card);
+                }
+            });
+        });
+        // 更新手牌状态
+        this.$forceUpdate();
+        // 发送打出对子请求和更新后的手牌状态
+        this.socket.emit('play_pairs4', {
+            player_id: this.myPlayerId,
+            pairs: pairs,
+            newPlayerCards: this.playerCards, // 发送更新后的手牌状态
+            room_id: this.room_id
+        });
+        // 检查手牌是否为空，如果是，则结束回合
+        if (this.playerCards.length === 0) {
+            this.socket.emit('end_turn4', { player_id: this.myPlayerId });
+        }
+    },
+
+    findPairs: function(cards) {
+        let pairs = [];
+        let cardRanks = cards.map(card => card.slice(-1)); // 获取所有牌的点数
+        let seenRanks = {}; // 用于跟踪已匹配的点数
+        for (let i = 0; i < cardRanks.length; i++) {
+        if (!seenRanks[cardRanks[i]]) {
+            seenRanks[cardRanks[i]] = [];
+        }
+        seenRanks[cardRanks[i]].push(cards[i]);
+        if (seenRanks[cardRanks[i]].length === 2) {
+            pairs.push(seenRanks[cardRanks[i]]);
+            seenRanks[cardRanks[i]] = []; // 重置该点数的数组，以便寻找更多对子
+        }
+    }
+        return pairs;
+      },
+    },
+
+    mounted: function() {
+      // 在组件挂载完成后，为整个文档添加点击事件监听
+      document.addEventListener('click', () => {
+        this.restoreOpponentCardPosition();
+      });
+    }
+  })
+</script>
+</body>
+</html>
