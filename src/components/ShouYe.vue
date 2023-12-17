@@ -90,24 +90,27 @@
     }  
     input {  
         margin-bottom: 10px;  
-        width: 200px;  
+        width: 250px;
         padding: 10px;  
         
-    }  
+    }
+
     a {   
         color: #007bff;  
         text-decoration: none;  
-        margin-top: 20px;  
-       
-    }  
+        margin-top: 5px;
+        margin-left:15px;
+    }
+
     button {  
         padding: 10px 50px;  
         font-size: 16px;  
         background-color: #007bff;  
         color: #fff;  
         border: none;  
-        border-radius: 5px;  
-        cursor: pointer;  
+        border-radius: 5px;
+        cursor: pointer;
+        margin-left: 80px;
     }  
     button:hover {  
         background-color: #0056b3; 
